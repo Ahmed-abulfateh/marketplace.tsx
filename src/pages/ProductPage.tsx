@@ -339,6 +339,13 @@ function ProductPage() {
             <h2>{translateCatalogText(listing.trust)}</h2>
           </div>
           <div className={`gallery-stage gallery-stage-${activeGallery.tone}`}>
+            {listing.imageUrl ? (
+              <img
+                className="product-gallery-image"
+                src={listing.imageUrl}
+                alt={translateCatalogText(listing.title)}
+              />
+            ) : null}
             <p className="card-label">{pickText(activeGallery.label, language)}</p>
             <h3>{translateCatalogText(listing.title)}</h3>
             <p>{pickText(activeGallery.note, language)}</p>

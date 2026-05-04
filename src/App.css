@@ -1068,6 +1068,14 @@ html[dir='rtl'] .auth-header {
   margin: 0;
 }
 
+.product-gallery-image {
+  width: 100%;
+  max-height: 18rem;
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  object-fit: cover;
+}
+
 .gallery-thumb-grid,
 .product-spec-grid,
 .seller-info-grid,
@@ -1238,9 +1246,62 @@ html[dir='rtl'] .auth-header {
 }
 
 .listing-card {
-  padding: 1.25rem;
+  display: grid;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--border-soft);
+  border-radius: 22px;
   background:
     linear-gradient(180deg, rgba(18, 20, 24, 0.96), rgba(10, 12, 16, 0.96));
+}
+
+.listing-card-body {
+  padding: 1.25rem;
+}
+
+.listing-image-media,
+.listing-image-placeholder {
+  width: 100%;
+  height: 11.5rem;
+  object-fit: cover;
+}
+
+.listing-image-media {
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.listing-image-placeholder {
+  border-bottom: 1px solid var(--border-soft);
+  background:
+    radial-gradient(circle at 18% 16%, rgba(29, 155, 240, 0.25), transparent 35%),
+    linear-gradient(180deg, rgba(20, 28, 38, 0.96), rgba(11, 14, 18, 0.96));
+}
+
+.listing-image-preview {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  background: rgba(22, 24, 28, 0.96);
+}
+
+.listing-image-preview-img {
+  width: 100%;
+  max-height: 14rem;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid var(--border-soft);
+  margin-top: 0.5rem;
+}
+
+.form-field-optional {
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--muted);
+  margin-inline-start: 0.4rem;
 }
 
 .listing-card h3,

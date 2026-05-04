@@ -26,6 +26,7 @@ export type ModerationNote = {
 export type Listing = {
   id: string
   title: string
+  imageUrl: string
   seller: string
   price: number
   meta: string
@@ -41,6 +42,7 @@ export type Listing = {
 
 export type ListingEditorInput = {
   title: string
+  imageUrl: string
   price: number
   meta: string
   description: string

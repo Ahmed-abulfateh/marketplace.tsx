@@ -12,6 +12,7 @@ const listingSchema = new mongoose.Schema(
   {
     id: { type: String, required: true, unique: true },
     title: { type: String, required: true },
+    imageUrl: { type: String, default: '' },
     seller: { type: String, required: true },
     price: { type: Number, required: true },
     meta: { type: String, required: true },

@@ -200,6 +200,8 @@ type AppCopy = {
     editTitle: string
     placeholders: {
       title: string
+      imageUrlLabel: string
+      imageUrl: string
       category: string
       price: string
       inventory: string
@@ -280,6 +282,7 @@ type AppCopy = {
     setStatus: (status: string) => string
     placeholders: {
       title: string
+      imageUrl: string
       category: string
       price: string
       inventory: string
@@ -541,6 +544,8 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       editTitle: 'Update the selected product details.',
       placeholders: {
         title: 'Listing title',
+        imageUrlLabel: 'Product image',
+        imageUrl: 'Paste an https:// image link',
         category: 'Category',
         price: 'Price (BHD)',
         inventory: 'Inventory',
@@ -630,6 +635,7 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       setStatus: (status) => `Set ${status}`,
       placeholders: {
         title: 'Listing title',
+        imageUrl: 'Image URL (https://...)',
         category: 'Category',
         price: 'Price',
         inventory: 'Inventory',
@@ -889,6 +895,8 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       editTitle: 'حدّث تفاصيل المنتج المحدد.',
       placeholders: {
         title: 'عنوان المنتج',
+        imageUrlLabel: 'صورة المنتج',
+        imageUrl: 'الصق رابط صورة https://',
         category: 'الفئة',
         price: 'السعر (BHD)',
         inventory: 'المخزون',
@@ -978,6 +986,7 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       setStatus: (status) => `ضبط الحالة إلى ${status}`,
       placeholders: {
         title: 'عنوان المنتج',
+        imageUrl: 'رابط الصورة (https://...)',
         category: 'الفئة',
         price: 'السعر',
         inventory: 'المخزون',

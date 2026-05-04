@@ -73,6 +73,7 @@ const sellerQueueCopy = {
 
 const createInitialForm = (defaults: { category: string; trust: string; shipping: string }): ListingEditorInput => ({
   title: '',
+  imageUrl: '',
   category: defaults.category,
   price: 85,
   inventory: 10,
@@ -84,6 +85,7 @@ const createInitialForm = (defaults: { category: string; trust: string; shipping
 
 const createFormFromListing = (listing: Listing): ListingEditorInput => ({
   title: listing.title,
+  imageUrl: listing.imageUrl,
   category: listing.category,
   price: listing.price,
   inventory: listing.inventory,
@@ -400,6 +402,24 @@ function SellerPage() {
         ) : null}
         <form className="form-grid" onSubmit={handleCreateListing}>
           <input value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} placeholder={copy.seller.placeholders.title} required />
+          <label className="form-field">
+            <span className="card-label">{copy.seller.placeholders.imageUrlLabel} <span className="form-field-optional">(optional)</span></span>
+            <input
+              value={form.imageUrl}
+              onChange={(event) => setForm((current) => ({ ...current, imageUrl: event.target.value }))}
+              placeholder={copy.seller.placeholders.imageUrl}
+              type="url"
+            />
+            {form.imageUrl.trim() ? (
+              <img
+                src={form.imageUrl.trim()}
+                alt={form.title || 'preview'}
+                className="listing-image-preview-img"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                onLoad={(e) => { (e.currentTarget as HTMLImageElement).style.display = '' }}
+              />
+            ) : null}
+          </label>
           <label className="form-field">
             <span className="card-label">{copy.seller.placeholders.category}</span>
             <select value={form.category} onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))} required>

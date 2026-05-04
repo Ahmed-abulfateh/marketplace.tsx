@@ -7,6 +7,7 @@ import type { ListingEditorInput, ListingStatus } from '../types'
 
 const createFormFromListing = (listing: {
   title: string
+  imageUrl: string
   price: number
   meta: string
   description: string
@@ -16,6 +17,7 @@ const createFormFromListing = (listing: {
   inventory: number
 }) => ({
   title: listing.title,
+  imageUrl: listing.imageUrl,
   price: listing.price,
   meta: listing.meta,
   description: listing.description,
@@ -184,6 +186,7 @@ function AdminModerationDetailPage() {
         </div>
         <form className="form-grid compact-form-grid" onSubmit={handleUpdateListing}>
           <input value={form?.title ?? ''} onChange={(event) => setForm((current) => current ? { ...current, title: event.target.value } : current)} placeholder={copy.moderation.placeholders.title} required />
+          <input value={form?.imageUrl ?? ''} onChange={(event) => setForm((current) => current ? { ...current, imageUrl: event.target.value } : current)} placeholder={copy.moderation.placeholders.imageUrl} type="url" />
           <input value={form?.category ?? ''} onChange={(event) => setForm((current) => current ? { ...current, category: event.target.value } : current)} placeholder={copy.moderation.placeholders.category} required />
           <input value={String(form?.price ?? '')} onChange={(event) => setForm((current) => current ? { ...current, price: Number(event.target.value) } : current)} placeholder={copy.moderation.placeholders.price} type="number" min="1" required />
           <input value={String(form?.inventory ?? '')} onChange={(event) => setForm((current) => current ? { ...current, inventory: Number(event.target.value) } : current)} placeholder={copy.moderation.placeholders.inventory} type="number" min="1" required />

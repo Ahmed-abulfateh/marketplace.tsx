@@ -238,6 +238,7 @@ const slugify = (value) =>
 
 const editableListingFields = [
   'title',
+  'imageUrl',
   'price',
   'meta',
   'description',
@@ -251,8 +252,31 @@ const pickListingUpdates = (payload = {}) =>
   Object.fromEntries(
     editableListingFields
       .filter((field) => payload[field] !== undefined)
-      .map((field) => [field, field === 'price' || field === 'inventory' ? Number(payload[field]) : payload[field]]),
+      .map((field) => {
+        if (field === 'price' || field === 'inventory') {
+          return [field, Number(payload[field])]
+        }
+
+        if (field === 'imageUrl') {
+          return [field, String(payload[field] ?? '').trim()]
+        }
+
+        return [field, payload[field]]
+      }),
   )
+
+const isValidListingImageUrl = (value) => {
+  if (!value) {
+    return true
+  }
+
+  try {
+    const parsed = new URL(String(value))
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
 
 const findManagedListing = async (req, res) => {
   const listing = await Listing.findOne({ id: req.params.listingId }).lean()
@@ -358,9 +382,16 @@ app.post('/api/cart/:listingId/toggle', authRequired(['buyer', 'seller', 'admin'
 
 app.post('/api/listings', authRequired(['seller', 'admin']), sellerApproved, async (req, res) => {
   const payload = req.body ?? {}
+  const imageUrl = String(payload.imageUrl ?? '').trim()
+
+  if (!isValidListingImageUrl(imageUrl)) {
+    return res.status(400).json({ message: 'Image URL must be a valid http(s) URL.' })
+  }
+
   await Listing.create({
     id: slugify(payload.title || `listing-${Date.now()}`),
     title: payload.title,
+    imageUrl,
     seller: req.session.name,
     price: Number(payload.price),
     meta: payload.meta,
@@ -382,6 +413,10 @@ app.patch('/api/listings/:listingId', authRequired(['seller', 'admin']), sellerA
 
   if (!listing) {
     return
+  }
+
+  if (req.body?.imageUrl !== undefined && !isValidListingImageUrl(req.body.imageUrl)) {
+    return res.status(400).json({ message: 'Image URL must be a valid http(s) URL.' })
   }
 
   await Listing.updateOne({ id: listing.id }, { $set: pickListingUpdates(req.body) })
