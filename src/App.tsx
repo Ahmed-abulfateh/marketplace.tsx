@@ -11,6 +11,7 @@ import AdminSellersPage from './pages/AdminSellersPage'
 import BrowsePage from './pages/BrowsePage'
 import CheckoutPage from './pages/CheckoutPage'
 import CheckoutSuccessPage from './pages/CheckoutSuccessPage'
+import DeploymentPage from './pages/DeploymentPage'
 import HomePage from './pages/HomePage'
 import ProductPage from './pages/ProductPage'
 import SellerOrderDetailPage from './pages/SellerOrderDetailPage'
@@ -24,6 +25,7 @@ function App() {
     <Routes>
       <Route path="sign-in" element={<SignInPage />} />
       <Route path="sign-up" element={<SignUpPage />} />
+      <Route path="deployment" element={<DeploymentPage />} />
       <Route element={<MarketplaceLayout />}>
         <Route index element={<HomePage />} />
         <Route path="browse" element={<BrowsePage />} />
