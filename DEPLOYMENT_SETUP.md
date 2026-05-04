@@ -110,6 +110,9 @@ The `render.yaml` file is configured for deployment with:
 ## 🔐 Security Notes
 
 - MongoDB Atlas connection uses SSL/TLS encryption
+- Render outbound IP ranges to whitelist in MongoDB Atlas Network Access:
+   - `74.220.48.0/24`
+   - `74.220.56.0/24`
 - JWT tokens expire after 7 days
 - Seller accounts require admin approval before they can list items
 - CORS is configured to only allow specified origins
