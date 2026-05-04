@@ -142,15 +142,6 @@ function MarketplaceLayout() {
       <Outlet />
 
       <footer className="site-footer">
-        <div>
-          <p className="section-kicker">{copy.layout.footerKicker}</p>
-          <p>{copy.layout.footerSummary}</p>
-        </div>
-        <div className="footer-links">
-          {copy.layout.footerBadges.map((badge) => (
-            <span key={badge}>{badge}</span>
-          ))}
-        </div>
       </footer>
     </div>
   )

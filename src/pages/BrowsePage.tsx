@@ -1,7 +1,6 @@
 import { useDeferredValue, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import ListingCard from '../components/ListingCard'
-import PageHero from '../components/PageHero'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
 
@@ -40,23 +39,6 @@ function BrowsePage() {
 
   return (
     <main className="page-stack">
-      <PageHero
-        variant="browse"
-        kicker={copy.browse.kicker}
-        title={copy.browse.title}
-        summary={copy.browse.summary}
-        aside={
-          <>
-            <p className="card-label">{copy.browse.rulesLabel}</p>
-            <ul className="feature-list compact">
-              {copy.browse.rules.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </>
-        }
-      />
-
       <section className="search-panel">
         <label className="search-field" htmlFor="listing-search">
           <span className="section-kicker">{copy.browse.searchKicker}</span>

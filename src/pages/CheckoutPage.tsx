@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { Navigate, useNavigate, useParams } from 'react-router-dom'
-import PageHero from '../components/PageHero'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
 
@@ -20,7 +19,13 @@ function CheckoutPage() {
   const checkoutListings = listings.filter((listing) => checkoutIds.includes(listing.id))
 
   if (checkoutListings.length === 0) {
-    return <Navigate to="/browse" replace />
+    return (
+      <main className="page-stack">
+        <article className="queue-card">
+          <p>{copy.common.noResults}</p>
+        </article>
+      </main>
+    )
   }
 
   const total = checkoutListings.reduce((sum, listing) => sum + listing.price, 0)
@@ -39,23 +44,6 @@ function CheckoutPage() {
 
   return (
     <main className="page-stack">
-      <PageHero
-        variant="product"
-        kicker={copy.checkout.kicker}
-        title={listingId ? copy.checkout.singleTitle : copy.checkout.cartTitle}
-        summary={copy.checkout.summary}
-        aside={
-          <>
-            <p className="card-label">{copy.checkout.summaryLabel}</p>
-            <ul className="feature-list compact">
-              <li>{copy.common.itemsCount(checkoutListings.length)}</li>
-              <li>{copy.common.total(formatCurrency(total))}</li>
-              <li>{copy.checkout.payoutRelease}</li>
-            </ul>
-          </>
-        }
-      />
-
       <form className="product-layout" onSubmit={handleConfirm}>
         <article className="product-panel">
           <div className="section-heading compact">
