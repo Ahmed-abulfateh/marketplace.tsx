@@ -10,7 +10,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <LanguageProvider>
       <MarketplaceProvider>
-        <BrowserRouter>
+        <BrowserRouter basename="/marketplace.tsx">
           <App />
         </BrowserRouter>
       </MarketplaceProvider>
