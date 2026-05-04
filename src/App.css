@@ -794,6 +794,29 @@ html[dir='rtl'] .split-copy p {
   color: #7cc7ff;
 }
 
+.filter-chip {
+  padding: 0.55rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(22, 24, 28, 0.88);
+  border: 1px solid var(--border-soft);
+  color: var(--heading);
+  font-size: 0.86rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.filter-chip:hover {
+  background: rgba(29, 155, 240, 0.1);
+  border-color: rgba(29, 155, 240, 0.3);
+}
+
+.filter-chip-active {
+  background: rgba(29, 155, 240, 0.18);
+  border-color: rgba(29, 155, 240, 0.5);
+  color: #8ecdf8;
+}
+
 .listing-link,
 .inline-link {
   color: inherit;
