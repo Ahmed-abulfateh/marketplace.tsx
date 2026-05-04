@@ -8,6 +8,7 @@ import type {
 } from '../types'
 
 const TOKEN_KEY = 'signal-market-token'
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? ''
 
 const readToken = () => window.localStorage.getItem(TOKEN_KEY)
 
@@ -22,7 +23,7 @@ const writeToken = (token: string | null) => {
 
 const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
   const token = readToken()
-  const response = await fetch(path, {
+  const response = await fetch(`${API_BASE}${path}`, {
     ...init,
     headers: {
       'Content-Type': 'application/json',

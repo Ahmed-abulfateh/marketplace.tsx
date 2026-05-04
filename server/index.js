@@ -41,6 +41,7 @@ const orderStatusFlow = {
 const allowedOrigins = Array.from(
   new Set([
     process.env.FRONTEND_URL,
+    'https://ahmed-abulfateh.github.io',
     'http://localhost:4000',
     'http://127.0.0.1:4000',
     'http://localhost:5173',
