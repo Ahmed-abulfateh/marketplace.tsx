@@ -14,12 +14,14 @@ function MarketplaceLayout() {
 
   // Keep header search bar in sync when navigating to /browse with a query
   useEffect(() => {
+    const nextSearchQuery = new URLSearchParams(location.search).get('q') ?? ''
+
     if (location.pathname === '/browse') {
-      setSearchQuery(searchParams.get('q') ?? '')
+      setSearchQuery((current) => (current === nextSearchQuery ? current : nextSearchQuery))
     } else if (location.pathname !== '/browse') {
-      setSearchQuery('')
+      setSearchQuery((current) => (current === '' ? current : ''))
     }
-  }, [location.pathname, searchParams])
+  }, [location.pathname, location.search])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()

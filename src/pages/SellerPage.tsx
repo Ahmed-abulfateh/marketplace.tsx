@@ -175,22 +175,27 @@ function SellerPage() {
 
   useEffect(() => {
     setStockDrafts((current) => {
+      let hasChanges = false
       const next = { ...current }
       const managedIds = new Set(managedListings.map((listing) => listing.id))
 
       managedListings.forEach((listing) => {
-        if (next[listing.id] === undefined || savingStockId === listing.id) {
+        const nextInventory = String(listing.inventory)
+
+        if (next[listing.id] === undefined || (savingStockId === listing.id && next[listing.id] !== nextInventory)) {
           next[listing.id] = String(listing.inventory)
+          hasChanges = true
         }
       })
 
       Object.keys(next).forEach((listingId) => {
         if (!managedIds.has(listingId)) {
           delete next[listingId]
+          hasChanges = true
         }
       })
 
-      return next
+      return hasChanges ? next : current
     })
   }, [managedListings, savingStockId])
 
