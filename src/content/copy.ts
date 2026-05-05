@@ -29,6 +29,7 @@ type AppCopy = {
       browse: string
       seller: string
       admin: string
+      shipments: string
       checkout: string
     }
     signIn: string
@@ -144,8 +145,14 @@ type AppCopy = {
     addressLabel: string
     ordersLabel: string
     nextSteps: string
-    sellerOrders: string
+    shipments: string
     backToBrowse: string
+  }
+  shipments: {
+    kicker: string
+    title: string
+    noOrders: string
+    reviewCta: string
   }
   sellerLayout: {
     kicker: string
@@ -355,6 +362,7 @@ export const copyByLanguage: Record<Language, AppCopy> = {
         browse: 'Browse',
         seller: 'Seller Hub',
         admin: 'Admin',
+        shipments: 'Shipments',
         checkout: 'Checkout',
       },
       signIn: 'Sign in',
@@ -496,8 +504,14 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       addressLabel: 'Address',
       ordersLabel: 'Orders',
       nextSteps: 'Next steps',
-      sellerOrders: 'View seller orders',
+      shipments: 'Track shipment',
       backToBrowse: 'Back to browse',
+    },
+    shipments: {
+      kicker: 'Shipments',
+      title: 'Track your orders from confirmation to delivery.',
+      noOrders: 'You do not have any shipment orders yet.',
+      reviewCta: 'Open product to review',
     },
     sellerLayout: {
       kicker: 'Seller workspace',
@@ -727,6 +741,7 @@ export const copyByLanguage: Record<Language, AppCopy> = {
         browse: 'تصفح',
         seller: 'لوحة البائع',
         admin: 'الإدارة',
+        shipments: 'الشحنات',
         checkout: 'الدفع',
       },
       signIn: 'تسجيل الدخول',
@@ -868,8 +883,14 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       addressLabel: 'العنوان',
       ordersLabel: 'الطلبات',
       nextSteps: 'الخطوات التالية',
-      sellerOrders: 'عرض طلبات البائع',
+      shipments: 'تتبع الشحنة',
       backToBrowse: 'العودة للتصفح',
+    },
+    shipments: {
+      kicker: 'الشحنات',
+      title: 'تابع طلباتك من التأكيد حتى التسليم.',
+      noOrders: 'لا توجد لديك طلبات شحن حتى الآن.',
+      reviewCta: 'افتح المنتج لإضافة تقييم',
     },
     sellerLayout: {
       kicker: 'مساحة البائع',

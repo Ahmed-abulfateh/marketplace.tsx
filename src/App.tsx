@@ -14,6 +14,7 @@ import CheckoutSuccessPage from './pages/CheckoutSuccessPage'
 import DeploymentPage from './pages/DeploymentPage'
 import HomePage from './pages/HomePage'
 import ProductPage from './pages/ProductPage'
+import ShipmentsPage from './pages/ShipmentsPage'
 import SellerOrderDetailPage from './pages/SellerOrderDetailPage'
 import SellerOrdersPage from './pages/SellerOrdersPage'
 import SellerPage from './pages/SellerPage'
@@ -34,6 +35,7 @@ function App() {
           <Route path="checkout" element={<CheckoutPage />} />
           <Route path="checkout/:listingId" element={<CheckoutPage />} />
           <Route path="checkout/success" element={<CheckoutSuccessPage />} />
+          <Route path="shipments" element={<ShipmentsPage />} />
         </Route>
         <Route element={<ProtectedRoute roles={['seller']} />}>
           <Route path="seller" element={<SellerLayout />}>

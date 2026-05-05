@@ -63,8 +63,8 @@ function CheckoutSuccessPage() {
         <aside className="purchase-panel">
           <p className="card-label">{copy.checkoutSuccess.nextSteps}</p>
           <div className="card-actions vertical-actions">
-            <Link className="button button-primary" to="/seller/orders" onClick={clearLastCheckout}>
-              {copy.checkoutSuccess.sellerOrders}
+            <Link className="button button-primary" to="/shipments" onClick={clearLastCheckout}>
+              {copy.checkoutSuccess.shipments}
             </Link>
             <Link className="button button-ghost" to="/browse" onClick={clearLastCheckout}>
               {copy.checkoutSuccess.backToBrowse}
