@@ -222,6 +222,7 @@ type AppCopy = {
   sellerOrders: {
     kicker: string
     title: string
+    deliverAction: string
     filters: {
       all: string
       toShip: string
@@ -635,6 +636,7 @@ export const copyByLanguage: Record<Language, AppCopy> = {
     sellerOrders: {
       kicker: 'Seller orders',
       title: 'Track every order through confirmation, shipment, and delivery.',
+      deliverAction: 'Mark as delivered',
       filters: {
         all: 'All orders',
         toShip: 'To ship',
@@ -651,9 +653,9 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       buyer: 'Buyer',
       status: 'Status',
       actionsLabel: 'Seller actions',
-      summary: 'Advance the order one step at a time from payment confirmation to delivery.',
+      summary: 'Use one delivery button when the shipment reaches the buyer.',
       delivered: 'Delivered',
-      advance: 'Advance order state',
+      advance: 'Mark as delivered',
       back: 'Back to orders',
     },
     seller: {
@@ -1068,6 +1070,7 @@ export const copyByLanguage: Record<Language, AppCopy> = {
     sellerOrders: {
       kicker: 'طلبات البائع',
       title: 'تابع كل طلب من التأكيد حتى الشحن والتسليم.',
+      deliverAction: 'تحديد كتم التسليم',
       filters: {
         all: 'كل الطلبات',
         toShip: 'جاهزة للشحن',
@@ -1084,9 +1087,9 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       buyer: 'المشتري',
       status: 'الحالة',
       actionsLabel: 'إجراءات البائع',
-      summary: 'حرّك الطلب خطوة واحدة في كل مرة من تأكيد الدفع إلى التسليم.',
+      summary: 'استخدم زر تسليم واحد عندما تصل الشحنة إلى المشتري.',
       delivered: 'تم التسليم',
-      advance: 'تحديث حالة الطلب',
+      advance: 'تحديد كتم التسليم',
       back: 'العودة إلى الطلبات',
     },
     seller: {
