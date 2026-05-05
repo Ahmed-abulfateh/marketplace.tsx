@@ -5,6 +5,17 @@ import { useMarketplace } from '../context/MarketplaceContext'
 function AdminPage() {
   const { copy, translateCatalogText, translateListingStatus, translateOrderStatus } = useLanguage()
   const { advanceOrderStatus, listingStatuses, listings, orders } = useMarketplace()
+  const totalUnits = listings.reduce((sum, listing) => sum + listing.inventory, 0)
+  const lowStockCount = listings.filter((listing) => listing.inventory > 0 && listing.inventory <= 5).length
+  const outOfStockCount = listings.filter((listing) => listing.inventory === 0).length
+  const inventoryValue = listings.reduce((sum, listing) => sum + listing.price * listing.inventory, 0)
+
+  const stockStats = [
+    { label: copy.admin.stockCards.totalUnits, value: String(totalUnits) },
+    { label: copy.admin.stockCards.lowStock, value: String(lowStockCount) },
+    { label: copy.admin.stockCards.outOfStock, value: String(outOfStockCount) },
+    { label: copy.admin.stockCards.stockValue, value: `${inventoryValue.toFixed(3)} BHD` },
+  ]
 
   return (
     <main className="page-stack">
@@ -20,6 +31,21 @@ function AdminPage() {
           </>
         }
       />
+
+      <section className="ops-board">
+        <div className="section-heading compact">
+          <p className="section-kicker">{copy.admin.stockStatsKicker}</p>
+          <h2>{copy.admin.stockStatsTitle}</h2>
+        </div>
+        <div className="metric-grid admin-stock-grid">
+          {stockStats.map((item) => (
+            <article className="metric-card" key={item.label}>
+              <p className="card-label">{item.label}</p>
+              <strong>{item.value}</strong>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <section className="ops-board">
         <div className="section-heading compact">

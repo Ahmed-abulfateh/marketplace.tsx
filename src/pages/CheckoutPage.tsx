@@ -8,6 +8,8 @@ function CheckoutPage() {
   const navigate = useNavigate()
   const { copy, formatCurrency, translateCatalogText } = useLanguage()
   const { cartIds, checkout, listings, session } = useMarketplace()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [form, setForm] = useState({
     buyerName: session?.name ?? '',
     email: 'buyer@example.com',
@@ -32,14 +34,28 @@ function CheckoutPage() {
 
   const handleConfirm = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    await checkout({
-      listingIds: checkoutListings.map((listing) => listing.id),
-      buyerName: form.buyerName,
-      email: form.email,
-      address: form.address,
-      paymentMethod: form.paymentMethod,
-    })
-    navigate('/checkout/success', { replace: true })
+
+    setSubmitError(null)
+    setIsSubmitting(true)
+
+    try {
+      const confirmation = await checkout({
+        listingIds: checkoutListings.map((listing) => listing.id),
+        buyerName: form.buyerName,
+        email: form.email,
+        address: form.address,
+        paymentMethod: form.paymentMethod,
+      })
+
+      navigate('/checkout/success', {
+        replace: true,
+        state: { confirmation },
+      })
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Checkout failed. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -73,8 +89,9 @@ function CheckoutPage() {
           <p className="card-label">{copy.checkout.actionsLabel}</p>
           <strong className="purchase-price">{formatCurrency(total)}</strong>
           <p>{copy.checkout.actionsSummary}</p>
+          {submitError ? <p role="alert">{submitError}</p> : null}
           <div className="card-actions vertical-actions">
-            <button type="submit" className="button button-primary">
+            <button type="submit" className="button button-primary" disabled={isSubmitting}>
               {copy.checkout.confirm}
             </button>
             <button type="button" className="button button-ghost" onClick={() => navigate('/browse')}>

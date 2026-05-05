@@ -111,6 +111,8 @@ function SellerPage() {
   const [form, setForm] = useState<ListingEditorInput>(() => createInitialForm(copy.seller.defaultForm))
   const [formNotice, setFormNotice] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
   const [listNotice, setListNotice] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
+  const [stockDrafts, setStockDrafts] = useState<Record<string, string>>({})
+  const [savingStockId, setSavingStockId] = useState<string | null>(null)
 
   const managedListings = listings.filter((listing) => listing.seller === session?.name)
   const managedListingIds = new Set(managedListings.map((listing) => listing.id))
@@ -170,6 +172,27 @@ function SellerPage() {
 
     setForm(createFormFromListing(listing))
   }, [copy.seller.defaultForm, editingListingId, managedListings])
+
+  useEffect(() => {
+    setStockDrafts((current) => {
+      const next = { ...current }
+      const managedIds = new Set(managedListings.map((listing) => listing.id))
+
+      managedListings.forEach((listing) => {
+        if (next[listing.id] === undefined || savingStockId === listing.id) {
+          next[listing.id] = String(listing.inventory)
+        }
+      })
+
+      Object.keys(next).forEach((listingId) => {
+        if (!managedIds.has(listingId)) {
+          delete next[listingId]
+        }
+      })
+
+      return next
+    })
+  }, [managedListings, savingStockId])
 
   const sellerMetrics = [
     {
@@ -253,6 +276,34 @@ function SellerPage() {
         tone: 'error',
         message: error instanceof Error ? error.message : copy.seller.notices.deleteError,
       })
+    }
+  }
+
+  const handleStockSave = async (listing: Listing) => {
+    const draft = stockDrafts[listing.id] ?? String(listing.inventory)
+    const nextInventory = Number(draft)
+
+    if (!Number.isInteger(nextInventory) || nextInventory < 0) {
+      setListNotice({ tone: 'error', message: copy.seller.notices.stockValidation })
+      return
+    }
+
+    setSavingStockId(listing.id)
+    setListNotice(null)
+
+    try {
+      await updateListing(listing.id, {
+        ...createFormFromListing(listing),
+        inventory: nextInventory,
+      })
+      setListNotice({ tone: 'success', message: copy.seller.notices.stockUpdated })
+    } catch (error) {
+      setListNotice({
+        tone: 'error',
+        message: error instanceof Error ? error.message : copy.seller.notices.stockUpdateError,
+      })
+    } finally {
+      setSavingStockId(null)
     }
   }
 
@@ -359,6 +410,32 @@ function SellerPage() {
                 <p className="card-label">{translateCatalogText(listing.category)}</p>
                 <h3>{translateCatalogText(listing.title)}</h3>
                 <p className="seller-name">{listing.seller}</p>
+                <div className="stock-manager" role="group" aria-label={copy.seller.stockManagerLabel}>
+                  <span className="product-label">{copy.seller.placeholders.inventory}</span>
+                  <div className="stock-manager-row">
+                    <input
+                      value={stockDrafts[listing.id] ?? String(listing.inventory)}
+                      onChange={(event) =>
+                        setStockDrafts((current) => ({
+                          ...current,
+                          [listing.id]: event.target.value,
+                        }))
+                      }
+                      type="number"
+                      min="0"
+                      step="1"
+                      className="stock-quantity-input"
+                    />
+                    <button
+                      type="button"
+                      className="button button-secondary stock-save-button"
+                      onClick={() => void handleStockSave(listing)}
+                      disabled={savingStockId === listing.id}
+                    >
+                      {copy.seller.saveStock}
+                    </button>
+                  </div>
+                </div>
                 <div className="status-pill-row">
                   {(['live', 'review', 'paused'] as ListingStatus[]).map((option) => (
                     <button

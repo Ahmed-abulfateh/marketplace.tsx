@@ -46,7 +46,7 @@ type MarketplaceContextValue = {
   signOut: () => Promise<void>
   toggleFavorite: (listingId: string) => Promise<void>
   toggleCart: (listingId: string) => Promise<void>
-  checkout: (payload: CheckoutPayload) => Promise<void>
+  checkout: (payload: CheckoutPayload) => Promise<CheckoutConfirmation>
   createListing: (payload: ListingEditorInput) => Promise<void>
   updateListing: (listingId: string, payload: ListingEditorInput) => Promise<void>
   deleteListing: (listingId: string) => Promise<void>
@@ -106,6 +106,7 @@ function MarketplaceProvider({ children }: PropsWithChildren) {
       const response = await marketplaceApi.checkout(payload)
       setStore(response.store)
       setLastCheckout(response.confirmation)
+      return response.confirmation
     },
     createListing: async (payload) => updateFromApi(marketplaceApi.createListing(payload)),
     updateListing: async (listingId, payload) => updateFromApi(marketplaceApi.updateListing(listingId, payload)),

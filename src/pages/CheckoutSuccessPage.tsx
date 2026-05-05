@@ -1,13 +1,21 @@
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import PageHero from '../components/PageHero'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
+import type { CheckoutConfirmation } from '../types'
+
+type CheckoutSuccessLocationState = {
+  confirmation?: CheckoutConfirmation
+}
 
 function CheckoutSuccessPage() {
+  const location = useLocation()
+  const locationState = location.state as CheckoutSuccessLocationState | null
   const { copy } = useLanguage()
   const { clearLastCheckout, lastCheckout } = useMarketplace()
+  const confirmation = locationState?.confirmation ?? lastCheckout
 
-  if (!lastCheckout) {
+  if (!confirmation) {
     return <Navigate to="/browse" replace />
   }
 
@@ -22,9 +30,9 @@ function CheckoutSuccessPage() {
           <>
             <p className="card-label">{copy.checkoutSuccess.confirmationLabel}</p>
             <ul className="feature-list compact">
-              <li>{copy.common.orderCount(lastCheckout.orderIds.length)}</li>
-              <li>{lastCheckout.paymentMethod}</li>
-              <li>{lastCheckout.emailSent ? copy.checkoutSuccess.emailSent : copy.checkoutSuccess.emailManual}</li>
+              <li>{copy.common.orderCount(confirmation.orderIds.length)}</li>
+              <li>{confirmation.paymentMethod}</li>
+              <li>{confirmation.emailSent ? copy.checkoutSuccess.emailSent : copy.checkoutSuccess.emailManual}</li>
             </ul>
           </>
         }
@@ -34,20 +42,20 @@ function CheckoutSuccessPage() {
         <article className="product-panel">
           <div className="section-heading compact">
             <p className="section-kicker">{copy.checkoutSuccess.summaryKicker}</p>
-            <h2>{lastCheckout.buyerName}</h2>
+            <h2>{confirmation.buyerName}</h2>
           </div>
           <div className="product-details-grid">
             <div>
               <span className="product-label">{copy.checkoutSuccess.emailLabel}</span>
-              <strong>{lastCheckout.email}</strong>
+              <strong>{confirmation.email}</strong>
             </div>
             <div>
               <span className="product-label">{copy.checkoutSuccess.addressLabel}</span>
-              <strong>{lastCheckout.address}</strong>
+              <strong>{confirmation.address}</strong>
             </div>
             <div>
               <span className="product-label">{copy.checkoutSuccess.ordersLabel}</span>
-              <strong>{lastCheckout.orderIds.join(', ')}</strong>
+              <strong>{confirmation.orderIds.join(', ')}</strong>
             </div>
           </div>
         </article>

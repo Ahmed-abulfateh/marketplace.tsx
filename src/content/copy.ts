@@ -215,12 +215,17 @@ type AppCopy = {
       saveChanges: string
       cancelEdit: string
     }
+    stockManagerLabel: string
+    saveStock: string
     notices: {
       updated: string
       created: string
       saveError: string
       deleted: string
       deleteError: string
+      stockUpdated: string
+      stockUpdateError: string
+      stockValidation: string
     }
     defaultForm: {
       category: string
@@ -252,6 +257,14 @@ type AppCopy = {
     heroSummary: string
     planeLabel: string
     planeSummary: string
+      stockStatsKicker: string
+      stockStatsTitle: string
+      stockCards: {
+        totalUnits: string
+        lowStock: string
+        outOfStock: string
+        stockValue: string
+      }
     queuesKicker: string
     queuesTitle: string
     queues: string[]
@@ -559,12 +572,17 @@ export const copyByLanguage: Record<Language, AppCopy> = {
         saveChanges: 'Save changes',
         cancelEdit: 'Cancel edit',
       },
+      stockManagerLabel: 'Stock quantity manager',
+      saveStock: 'Save stock',
       notices: {
         updated: 'Product updated successfully.',
         created: 'Product created successfully.',
         saveError: 'Could not save the product.',
         deleted: 'Product deleted successfully.',
         deleteError: 'Could not delete the product.',
+        stockUpdated: 'Stock quantity updated successfully.',
+        stockUpdateError: 'Could not update stock quantity.',
+        stockValidation: 'Stock quantity must be a whole number of 0 or more.',
       },
       defaultForm: {
         category: 'Home',
@@ -596,6 +614,14 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       heroSummary: 'Admin should see listing state, order state, and review actions without opening separate operational tools.',
       planeLabel: 'Control plane',
       planeSummary: 'Admin needs one surface for verification, listing moderation, payment exceptions, and refunds before scale work starts.',
+      stockStatsKicker: 'Stock oversight',
+      stockStatsTitle: 'Inventory health across all listings.',
+      stockCards: {
+        totalUnits: 'Total stock units',
+        lowStock: 'Low stock listings',
+        outOfStock: 'Out of stock listings',
+        stockValue: 'Inventory value',
+      },
       queuesKicker: 'Queues',
       queuesTitle: 'Operational work that protects trust and payouts.',
       queues: [
@@ -910,12 +936,17 @@ export const copyByLanguage: Record<Language, AppCopy> = {
         saveChanges: 'حفظ التعديلات',
         cancelEdit: 'إلغاء التعديل',
       },
+      stockManagerLabel: 'إدارة كمية المخزون',
+      saveStock: 'حفظ المخزون',
       notices: {
         updated: 'تم تحديث المنتج بنجاح.',
         created: 'تم إنشاء المنتج بنجاح.',
         saveError: 'تعذر حفظ المنتج.',
         deleted: 'تم حذف المنتج بنجاح.',
         deleteError: 'تعذر حذف المنتج.',
+        stockUpdated: 'تم تحديث كمية المخزون بنجاح.',
+        stockUpdateError: 'تعذر تحديث كمية المخزون.',
+        stockValidation: 'يجب أن تكون كمية المخزون رقمًا صحيحًا يساوي صفرًا أو أكثر.',
       },
       defaultForm: {
         category: 'المنزل',
@@ -947,6 +978,14 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       heroSummary: 'يجب أن ترى الإدارة حالة المنتج وحالة الطلب وإجراءات المراجعة دون فتح أدوات تشغيل منفصلة.',
       planeLabel: 'منصة التحكم',
       planeSummary: 'تحتاج الإدارة إلى شاشة واحدة للتحقق ومراجعة المنتجات واستثناءات الدفع والاسترداد قبل التوسع.',
+      stockStatsKicker: 'مراقبة المخزون',
+      stockStatsTitle: 'صحة المخزون عبر جميع المنتجات.',
+      stockCards: {
+        totalUnits: 'إجمالي وحدات المخزون',
+        lowStock: 'منتجات منخفضة المخزون',
+        outOfStock: 'منتجات نافد مخزونها',
+        stockValue: 'قيمة المخزون',
+      },
       queuesKicker: 'الطوابير',
       queuesTitle: 'الأعمال التشغيلية التي تحمي الثقة والأرباح.',
       queues: [

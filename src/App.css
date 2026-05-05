@@ -794,6 +794,33 @@ html[dir='rtl'] .split-copy p {
   color: #7cc7ff;
 }
 
+.stock-manager {
+  margin-top: 0.85rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.stock-manager-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.stock-quantity-input {
+  width: 100%;
+  min-height: 2.6rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: rgba(22, 24, 28, 0.96);
+  color: var(--heading);
+}
+
+.stock-save-button {
+  min-height: 2.6rem;
+  white-space: nowrap;
+}
+
 .filter-chip {
   padding: 0.55rem 0.8rem;
   border-radius: 999px;
@@ -1231,6 +1258,10 @@ html[dir='rtl'] .auth-header {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.admin-stock-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .metric-card strong {
   display: block;
   margin: 0.5rem 0;
@@ -1449,7 +1480,8 @@ html[dir='rtl'] .auth-header {
   .gallery-thumb-grid,
   .product-spec-grid,
   .seller-info-grid,
-  .review-grid {
+  .review-grid,
+  .admin-stock-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1496,8 +1528,14 @@ html[dir='rtl'] .auth-header {
 
   .nav-actions a,
   .role-chip,
-  .button {
+  .button,
+  .stock-save-button {
     width: 100%;
+  }
+
+  .stock-manager-row {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .utility-stats {
