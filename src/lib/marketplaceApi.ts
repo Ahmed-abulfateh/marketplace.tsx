@@ -4,6 +4,7 @@ import type {
   ListingEditorInput,
   ListingStatus,
   MarketplaceStore,
+  OrderStatus,
   ProfileInput,
   SignUpInput,
 } from '../types'
@@ -153,7 +154,7 @@ const marketplaceApi = {
     return response.store
   },
 
-  advanceOrderStatus: async (orderId: string, status?: 'delivered' | 'complete') => {
+  advanceOrderStatus: async (orderId: string, status?: OrderStatus | 'complete') => {
     const response = await request<StoreResponse>(`/api/orders/${orderId}/advance`, {
       method: 'PATCH',
       body: JSON.stringify(status ? { status } : {}),

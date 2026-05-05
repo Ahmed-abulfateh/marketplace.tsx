@@ -663,14 +663,14 @@ app.patch('/api/orders/:orderId/advance', authRequired(['seller', 'admin']), asy
   }
 
   const requestedStatus = String(req.body?.status ?? '').trim().toLowerCase()
-  const requestedDelivered = requestedStatus === 'delivered' || requestedStatus === 'complete'
+  const allowedManualStatuses = ['pending', 'paid', 'shipped', 'delivered', 'complete']
 
-  if (requestedStatus && !requestedDelivered) {
-    return res.status(400).json({ message: 'Only delivered (or complete) is supported for manual status updates.' })
+  if (requestedStatus && !allowedManualStatuses.includes(requestedStatus)) {
+    return res.status(400).json({ message: 'Status must be pending, paid, shipped, or delivered.' })
   }
 
-  const nextStatus = requestedDelivered
-    ? 'delivered'
+  const nextStatus = requestedStatus
+    ? requestedStatus === 'complete' ? 'delivered' : requestedStatus
     : orderStatusFlow[order.status] ?? order.status
 
   await Order.updateOne(

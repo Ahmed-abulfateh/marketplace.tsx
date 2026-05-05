@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
+import type { OrderStatus } from '../types'
 
 type QueueView = 'all' | 'to-ship' | 'shipped' | 'delivered'
 
@@ -16,12 +17,37 @@ function SellerOrdersPage() {
   const location = useLocation()
   const locationState = location.state as SellerOrdersLocationState | null
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null)
+  const [statusDrafts, setStatusDrafts] = useState<Record<string, OrderStatus>>({})
 
   const managedListingIds = new Set(
     listings.filter((listing) => listing.seller === session?.name).map((listing) => listing.id),
   )
 
   const sellerOrders = orders.filter((order) => managedListingIds.has(order.listingId))
+
+  useEffect(() => {
+    setStatusDrafts((current) => {
+      let hasChanges = false
+      const next = { ...current }
+      const orderIds = new Set(sellerOrders.map((order) => order.id))
+
+      sellerOrders.forEach((order) => {
+        if (next[order.id] !== order.status) {
+          next[order.id] = order.status
+          hasChanges = true
+        }
+      })
+
+      Object.keys(next).forEach((orderId) => {
+        if (!orderIds.has(orderId)) {
+          delete next[orderId]
+          hasChanges = true
+        }
+      })
+
+      return hasChanges ? next : current
+    })
+  }, [sellerOrders])
 
   const requestedView = searchParams.get('view') as QueueView | null
   const activeView: QueueView =
@@ -48,7 +74,7 @@ function SellerOrdersPage() {
     return order.status === activeView
   })
 
-  const handleMarkDelivered = async (orderId: string) => {
+  const handleSaveStatus = async (orderId: string, status: OrderStatus) => {
     if (updatingOrderId) {
       return
     }
@@ -56,7 +82,7 @@ function SellerOrdersPage() {
     setUpdatingOrderId(orderId)
 
     try {
-      await advanceOrderStatus(orderId, 'complete')
+      await advanceOrderStatus(orderId, status)
     } finally {
       setUpdatingOrderId(null)
     }
@@ -116,13 +142,28 @@ function SellerOrdersPage() {
                 </div>
               </div>
               <div className="card-actions">
+                <select
+                  value={statusDrafts[order.id] ?? order.status}
+                  onChange={(event) =>
+                    setStatusDrafts((current) => ({
+                      ...current,
+                      [order.id]: event.target.value as OrderStatus,
+                    }))
+                  }
+                  disabled={updatingOrderId === order.id}
+                >
+                  <option value="pending">{translateOrderStatus('pending')}</option>
+                  <option value="paid">{translateOrderStatus('paid')}</option>
+                  <option value="shipped">{translateOrderStatus('shipped')}</option>
+                  <option value="delivered">{translateOrderStatus('delivered')}</option>
+                </select>
                 <button
                   type="button"
                   className="button button-primary"
-                  onClick={() => void handleMarkDelivered(order.id)}
-                  disabled={order.status === 'delivered' || updatingOrderId === order.id}
+                  onClick={() => void handleSaveStatus(order.id, statusDrafts[order.id] ?? order.status)}
+                  disabled={updatingOrderId === order.id || (statusDrafts[order.id] ?? order.status) === order.status}
                 >
-                  {order.status === 'delivered' ? copy.sellerOrderDetail.delivered : 'Mark Delivered / Complete'}
+                  {copy.common.save}
                 </button>
                 <Link className="inline-link" to={`/seller/orders/${order.id}`}>
                   {copy.sellerOrders.detailLink}
