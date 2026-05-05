@@ -14,6 +14,7 @@ import CheckoutSuccessPage from './pages/CheckoutSuccessPage'
 import DeploymentPage from './pages/DeploymentPage'
 import HomePage from './pages/HomePage'
 import ProfilePage from './pages/ProfilePage.tsx'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import ProductPage from './pages/ProductPage'
 import ShipmentsPage from './pages/ShipmentsPage.tsx'
 import SellerOrderDetailPage from './pages/SellerOrderDetailPage'
@@ -28,6 +29,7 @@ function App() {
       <Route path="sign-in" element={<SignInPage />} />
       <Route path="sign-up" element={<SignUpPage />} />
       <Route path="deployment" element={<DeploymentPage />} />
+      <Route path="reset-password" element={<ResetPasswordPage />} />
       <Route element={<MarketplaceLayout />}>
         <Route index element={<HomePage />} />
         <Route path="browse" element={<BrowsePage />} />

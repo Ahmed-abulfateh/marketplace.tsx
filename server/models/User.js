@@ -14,6 +14,8 @@ const userSchema = new mongoose.Schema(
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ['buyer', 'seller', 'admin'], required: true },
     accountStatus: { type: String, enum: ['pending', 'active'], default: 'active' },
+    passwordResetToken: { type: String, default: null },
+    passwordResetExpiry: { type: Date, default: null },
   },
   { timestamps: true },
 )

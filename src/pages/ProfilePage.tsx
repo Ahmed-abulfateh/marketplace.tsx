@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom'
 import PageHero from '../components/PageHero'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
+import marketplaceApi from '../lib/marketplaceApi'
 import type { ProfileInput } from '../types'
 
 const buildProfileForm = (session: {
@@ -30,8 +31,12 @@ function ProfilePage() {
   const { isReady, session, updateProfile } = useMarketplace()
   const [notice, setNotice] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [isSendingReset, setIsSendingReset] = useState(false)
+  const [resetNotice, setResetNotice] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
-  const [form, setForm] = useState<ProfileInput | null>(null)
+  const [form, setForm] = useState<ProfileInput | null>(() =>
+    session ? buildProfileForm(session) : null,
+  )
 
   useEffect(() => {
     if (session) {
@@ -43,8 +48,12 @@ function ProfilePage() {
     return <main className="loading-shell">{copy.common.loading}</main>
   }
 
-  if (!session || !form) {
+  if (!session) {
     return <Navigate to="/sign-in" replace />
+  }
+
+  if (!form) {
+    return <main className="loading-shell">{copy.common.loading}</main>
   }
 
   const handleChange = (field: keyof ProfileInput, value: string) => {
@@ -66,6 +75,28 @@ function ProfilePage() {
       })
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  const handleRequestPasswordReset = async () => {
+    setResetNotice(null)
+    setIsSendingReset(true)
+
+    try {
+      const result = await marketplaceApi.requestPasswordReset()
+      if (result.resetUrl) {
+        // Dev mode without SMTP — show the link directly
+        setResetNotice({ tone: 'success', message: `${copy.profile.changePasswordSent} (dev link: ${result.resetUrl})` })
+      } else {
+        setResetNotice({ tone: 'success', message: copy.profile.changePasswordSent })
+      }
+    } catch (error) {
+      setResetNotice({
+        tone: 'error',
+        message: error instanceof Error ? error.message : copy.profile.notices.updateError,
+      })
+    } finally {
+      setIsSendingReset(false)
     }
   }
 
@@ -109,6 +140,24 @@ function ProfilePage() {
             </button>
           </div>
         </form>
+
+        <div className="section-divider" style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid var(--border)' }}>
+          <p className="section-kicker">{copy.resetPassword.kicker}</p>
+          {resetNotice ? (
+            <p className={resetNotice.tone === 'success' ? 'form-notice form-notice-success' : 'form-notice form-notice-error'}>
+              {resetNotice.message}
+            </p>
+          ) : null}
+          <button
+            type="button"
+            className="button button-secondary"
+            disabled={isSendingReset}
+            onClick={handleRequestPasswordReset}
+            style={{ marginTop: '0.75rem' }}
+          >
+            {copy.profile.changePasswordCta}
+          </button>
+        </div>
       </section>
     </main>
   )

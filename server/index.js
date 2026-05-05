@@ -1,4 +1,5 @@
 import cors from 'cors'
+import crypto from 'crypto'
 import dotenv from 'dotenv'
 import express from 'express'
 import fs from 'fs'
@@ -398,6 +399,61 @@ app.post('/api/auth/sign-up', async (req, res) => {
 
   const session = createSession(user)
   res.status(201).json({ token: issueToken(session), store: await buildStore(session) })
+})
+
+app.post('/api/auth/request-password-reset', authRequired(['buyer', 'seller', 'admin']), async (req, res) => {
+  const token = crypto.randomBytes(32).toString('hex')
+  const expiry = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
+
+  const user = await User.findOneAndUpdate(
+    { id: req.session.id },
+    { $set: { passwordResetToken: token, passwordResetExpiry: expiry } },
+    { new: true },
+  ).lean()
+
+  if (!user) {
+    return res.status(404).json({ message: 'User not found.' })
+  }
+
+  const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '')
+  const resetUrl = `${frontendUrl}/marketplace.tsx/reset-password?token=${token}`
+
+  if (mailTransport) {
+    await mailTransport.sendMail({
+      from: process.env.SMTP_USER,
+      to: user.email,
+      subject: 'Reset your Signal Market password',
+      html: `<p>Click the link below to reset your Signal Market password. It expires in 1 hour.</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>If you did not request this, you can ignore this email.</p>`,
+    })
+    res.json({ message: 'Password reset email sent.' })
+  } else {
+    res.json({ message: 'Password reset link generated.', resetUrl })
+  }
+})
+
+app.post('/api/auth/reset-password', async (req, res) => {
+  const token = String(req.body?.token ?? '').trim()
+  const newPassword = String(req.body?.newPassword ?? '')
+
+  if (!token || !newPassword || newPassword.length < 8) {
+    return res.status(400).json({ message: 'Token and a password of at least 8 characters are required.' })
+  }
+
+  const user = await User.findOne({
+    passwordResetToken: token,
+    passwordResetExpiry: { $gt: new Date() },
+  }).lean()
+
+  if (!user) {
+    return res.status(400).json({ message: 'Invalid or expired reset link. Please request a new one.' })
+  }
+
+  await User.findOneAndUpdate(
+    { id: user.id },
+    { $set: { passwordHash: hashPassword(newPassword), passwordResetToken: null, passwordResetExpiry: null } },
+  )
+
+  res.json({ message: 'Password updated successfully. You can now sign in with your new password.' })
 })
 
 app.patch('/api/profile', authRequired(['buyer', 'seller', 'admin']), async (req, res) => {

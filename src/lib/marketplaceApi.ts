@@ -190,6 +190,15 @@ const marketplaceApi = {
     country: string
     paymentMethod: string
   }) => request<CheckoutResponse>('/api/checkout', { method: 'POST', body: JSON.stringify(payload) }),
+
+  requestPasswordReset: async () =>
+    request<{ message: string; resetUrl?: string }>('/api/auth/request-password-reset', { method: 'POST' }),
+
+  resetPassword: async (token: string, newPassword: string) =>
+    request<{ message: string }>('/api/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, newPassword }),
+    }),
 }
 
 export default marketplaceApi

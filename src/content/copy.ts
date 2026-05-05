@@ -177,6 +177,8 @@ type AppCopy = {
     formKicker: string
     formTitle: string
     save: string
+    changePasswordCta: string
+    changePasswordSent: string
     fields: {
       username: string
       email: string
@@ -190,6 +192,19 @@ type AppCopy = {
     notices: {
       updated: string
       updateError: string
+    }
+  }
+  resetPassword: {
+    kicker: string
+    title: string
+    summary: string
+    newPasswordLabel: string
+    confirmPasswordLabel: string
+    submit: string
+    notices: {
+      success: string
+      invalid: string
+      mismatch: string
     }
   }
   sellerLayout: {
@@ -574,6 +589,8 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       formKicker: 'Account details',
       formTitle: 'Update your profile information.',
       save: 'Save profile',
+      changePasswordCta: 'Change password via email',
+      changePasswordSent: 'A password reset link has been sent to your email address.',
       fields: {
         username: 'Username',
         email: 'Email',
@@ -587,6 +604,19 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       notices: {
         updated: 'Profile updated successfully.',
         updateError: 'Could not update your profile.',
+      },
+    },
+    resetPassword: {
+      kicker: 'Security',
+      title: 'Set a new password',
+      summary: 'Enter your new password below. The link expires after 1 hour.',
+      newPasswordLabel: 'New password',
+      confirmPasswordLabel: 'Confirm new password',
+      submit: 'Update password',
+      notices: {
+        success: 'Password updated successfully. You can now sign in with your new password.',
+        invalid: 'This reset link is invalid or has expired. Please request a new one from your profile.',
+        mismatch: 'Passwords do not match.',
       },
     },
     sellerLayout: {
@@ -991,6 +1021,8 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       formKicker: 'بيانات الحساب',
       formTitle: 'حدّث معلومات ملفك الشخصي.',
       save: 'حفظ الملف الشخصي',
+      changePasswordCta: 'تغيير كلمة المرور عبر البريد الإلكتروني',
+      changePasswordSent: 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.',
       fields: {
         username: 'اسم المستخدم',
         email: 'البريد الإلكتروني',
@@ -1004,6 +1036,19 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       notices: {
         updated: 'تم تحديث الملف الشخصي بنجاح.',
         updateError: 'تعذر تحديث الملف الشخصي.',
+      },
+    },
+    resetPassword: {
+      kicker: 'الأمان',
+      title: 'تعيين كلمة مرور جديدة',
+      summary: 'أدخل كلمة المرور الجديدة أدناه. تنتهي صلاحية الرابط بعد ساعة واحدة.',
+      newPasswordLabel: 'كلمة المرور الجديدة',
+      confirmPasswordLabel: 'تأكيد كلمة المرور الجديدة',
+      submit: 'تحديث كلمة المرور',
+      notices: {
+        success: 'تم تحديث كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة.',
+        invalid: 'رابط إعادة التعيين غير صالح أو منتهي الصلاحية. يرجى طلب رابط جديد من ملفك الشخصي.',
+        mismatch: 'كلمتا المرور غير متطابقتين.',
       },
     },
     sellerLayout: {
