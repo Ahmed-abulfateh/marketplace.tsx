@@ -123,6 +123,9 @@ function MarketplaceLayout() {
                 </div>
                 <div className="header-profile-dropdown">
                   <span className="dropdown-role">{translateRoleLabel(session.role)}</span>
+                  <Link className="dropdown-item" to="/profile">
+                    {copy.layout.profile}
+                  </Link>
                   <button type="button" className="dropdown-item" onClick={() => void signOut()}>
                     {copy.layout.signOut}
                   </button>

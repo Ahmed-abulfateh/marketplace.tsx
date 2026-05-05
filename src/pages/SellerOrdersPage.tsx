@@ -75,12 +75,27 @@ function SellerOrdersPage() {
 
           return (
             <article className="queue-card" key={order.id}>
-              <p className="card-label">{order.id}</p>
-              <h3>{listing ? translateCatalogText(listing.title) : order.listingId}</h3>
-              <p>{order.buyer}</p>
-              <div className="listing-footer">
-                <strong>{formatCurrency(order.total)}</strong>
-                <span>{translateOrderStatus(order.status)}</span>
+              <div className="order-item-meta-grid">
+                <div>
+                  <span className="product-label">{copy.common.orderId}</span>
+                  <strong>{order.id}</strong>
+                </div>
+                <div>
+                  <span className="product-label">{copy.common.product}</span>
+                  <p>{listing ? translateCatalogText(listing.title) : order.listingId}</p>
+                </div>
+                <div>
+                  <span className="product-label">{copy.common.buyer}</span>
+                  <p>{order.buyer}</p>
+                </div>
+                <div>
+                  <span className="product-label">{copy.common.totalLabel}</span>
+                  <strong>{formatCurrency(order.total)}</strong>
+                </div>
+                <div>
+                  <span className="product-label">{copy.common.status}</span>
+                  <p>{translateOrderStatus(order.status)}</p>
+                </div>
               </div>
               <Link className="inline-link" to={`/seller/orders/${order.id}`}>
                 {copy.sellerOrders.detailLink}

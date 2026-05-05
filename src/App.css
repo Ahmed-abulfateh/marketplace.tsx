@@ -890,6 +890,18 @@ html[dir='rtl'] .auth-header {
   margin-top: 1rem;
 }
 
+.order-item-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  width: 100%;
+}
+
+.order-item-meta-grid strong,
+.order-item-meta-grid p {
+  margin: 0.25rem 0 0;
+}
+
 .listing-meta-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -947,6 +959,18 @@ html[dir='rtl'] .auth-header {
 .form-field {
   display: grid;
   gap: 0.45rem;
+}
+
+.checkout-saved-toggle {
+  grid-template-columns: auto;
+}
+
+.checkout-saved-toggle-input {
+  width: auto !important;
+  min-height: auto !important;
+  padding: 0 !important;
+  justify-self: start;
+  accent-color: var(--accent);
 }
 
 .form-notice {
@@ -1481,7 +1505,8 @@ html[dir='rtl'] .auth-header {
   .product-spec-grid,
   .seller-info-grid,
   .review-grid,
-  .admin-stock-grid {
+  .admin-stock-grid,
+  .order-item-meta-grid {
     grid-template-columns: 1fr;
   }
 

@@ -16,6 +16,7 @@ import type {
   MarketplaceStore,
   Order,
   OrderStatus,
+  ProfileInput,
   SellerAccount,
   Session,
   SignUpInput,
@@ -25,7 +26,12 @@ type CheckoutPayload = {
   listingIds: string[]
   buyerName: string
   email: string
-  address: string
+  phone: string
+  addressLine: string
+  city: string
+  road: string
+  block: string
+  country: string
   paymentMethod: string
 }
 
@@ -44,6 +50,7 @@ type MarketplaceContextValue = {
   signIn: (payload: AuthCredentials) => Promise<void>
   signUp: (payload: SignUpInput) => Promise<void>
   signOut: () => Promise<void>
+  updateProfile: (payload: ProfileInput) => Promise<void>
   toggleFavorite: (listingId: string) => Promise<void>
   toggleCart: (listingId: string) => Promise<void>
   checkout: (payload: CheckoutPayload) => Promise<CheckoutConfirmation>
@@ -102,6 +109,7 @@ function MarketplaceProvider({ children }: PropsWithChildren) {
     signIn: async (payload) => updateFromApi(marketplaceApi.signIn(payload)),
     signUp: async (payload) => updateFromApi(marketplaceApi.signUp(payload)),
     signOut: async () => updateFromApi(marketplaceApi.signOut()),
+    updateProfile: async (payload) => updateFromApi(marketplaceApi.updateProfile(payload)),
     toggleFavorite: async (listingId) => updateFromApi(marketplaceApi.toggleFavorite(listingId)),
     toggleCart: async (listingId) => updateFromApi(marketplaceApi.toggleCart(listingId)),
     checkout: async (payload) => {

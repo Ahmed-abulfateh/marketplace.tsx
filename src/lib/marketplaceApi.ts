@@ -4,6 +4,7 @@ import type {
   ListingEditorInput,
   ListingStatus,
   MarketplaceStore,
+  ProfileInput,
   SignUpInput,
 } from '../types'
 
@@ -82,6 +83,14 @@ const marketplaceApi = {
   signOut: async () => {
     writeToken(null)
     const response = await request<StoreResponse>('/api/bootstrap')
+    return response.store
+  },
+
+  updateProfile: async (payload: ProfileInput) => {
+    const response = await request<StoreResponse>('/api/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    })
     return response.store
   },
 
@@ -173,7 +182,12 @@ const marketplaceApi = {
     listingIds: string[]
     buyerName: string
     email: string
-    address: string
+    phone: string
+    addressLine: string
+    city: string
+    road: string
+    block: string
+    country: string
     paymentMethod: string
   }) => request<CheckoutResponse>('/api/checkout', { method: 'POST', body: JSON.stringify(payload) }),
 }

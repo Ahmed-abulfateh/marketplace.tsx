@@ -13,8 +13,9 @@ import CheckoutPage from './pages/CheckoutPage'
 import CheckoutSuccessPage from './pages/CheckoutSuccessPage'
 import DeploymentPage from './pages/DeploymentPage'
 import HomePage from './pages/HomePage'
+import ProfilePage from './pages/ProfilePage.tsx'
 import ProductPage from './pages/ProductPage'
-import ShipmentsPage from './pages/ShipmentsPage'
+import ShipmentsPage from './pages/ShipmentsPage.tsx'
 import SellerOrderDetailPage from './pages/SellerOrderDetailPage'
 import SellerOrdersPage from './pages/SellerOrdersPage'
 import SellerPage from './pages/SellerPage'
@@ -32,6 +33,7 @@ function App() {
         <Route path="browse" element={<BrowsePage />} />
         <Route path="browse/:listingId" element={<ProductPage />} />
         <Route element={<ProtectedRoute roles={['buyer', 'seller', 'admin']} />}>
+          <Route path="profile" element={<ProfilePage />} />
           <Route path="checkout" element={<CheckoutPage />} />
           <Route path="checkout/:listingId" element={<CheckoutPage />} />
           <Route path="checkout/success" element={<CheckoutSuccessPage />} />

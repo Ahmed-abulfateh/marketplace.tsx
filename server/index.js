@@ -100,6 +100,11 @@ const createSession = (user) => ({
   username: user.username,
   email: user.email,
   phone: user.phone,
+  addressLine: user.addressLine ?? '',
+  city: user.city ?? '',
+  road: user.road ?? '',
+  block: user.block ?? '',
+  country: user.country ?? '',
   role: user.role,
   accountStatus: user.accountStatus ?? 'active',
 })
@@ -136,6 +141,11 @@ const ensureSeedData = async () => {
           username: user.username,
           email: user.email,
           phone: user.phone,
+          addressLine: user.addressLine ?? '',
+          city: user.city ?? '',
+          road: user.road ?? '',
+          block: user.block ?? '',
+          country: user.country ?? '',
           passwordHash: hashPassword(user.password),
           role: user.role,
           accountStatus: 'active',
@@ -161,12 +171,19 @@ const ensureUserState = async (session) => {
 }
 
 const buildStore = async (session = null) => {
+  let activeSession = session
+
+  if (session?.id) {
+    const user = await User.findOne({ id: session.id }).lean()
+    activeSession = user ? createSession(user) : null
+  }
+
   const listings = (await Listing.find().sort({ createdAt: -1 }).lean()).map(cleanDocument)
   const orders = (await Order.find().sort({ createdAt: -1 }).lean()).map(cleanDocument)
-  const appState = session ? await ensureUserState(session) : null
+  const appState = activeSession ? await ensureUserState(activeSession) : null
 
   const pendingSellers =
-    session?.role === 'admin'
+    activeSession?.role === 'admin'
       ? (await User.find({ role: 'seller' }).sort({ createdAt: -1 }).lean()).map((u) => ({
           id: u.id,
           username: u.username,
@@ -177,7 +194,7 @@ const buildStore = async (session = null) => {
       : undefined
 
   return {
-    session,
+    session: activeSession,
     listings,
     favoriteIds: appState?.favoriteIds ?? [],
     cartIds: appState?.cartIds ?? [],
@@ -343,6 +360,11 @@ app.post('/api/auth/sign-up', async (req, res) => {
   const username = String(req.body?.username ?? '').trim()
   const email = String(req.body?.email ?? '').trim().toLowerCase()
   const phone = String(req.body?.phone ?? '').trim()
+  const addressLine = String(req.body?.addressLine ?? '').trim()
+  const city = String(req.body?.city ?? '').trim()
+  const road = String(req.body?.road ?? '').trim()
+  const block = String(req.body?.block ?? '').trim()
+  const country = String(req.body?.country ?? '').trim()
   const password = String(req.body?.password ?? '')
   const role = req.body?.role
   const publicRoles = ['buyer', 'seller']
@@ -364,6 +386,11 @@ app.post('/api/auth/sign-up', async (req, res) => {
     username,
     email,
     phone,
+    addressLine,
+    city,
+    road,
+    block,
+    country,
     passwordHash: hashPassword(password),
     role,
     accountStatus: role === 'seller' ? 'pending' : 'active',
@@ -371,6 +398,54 @@ app.post('/api/auth/sign-up', async (req, res) => {
 
   const session = createSession(user)
   res.status(201).json({ token: issueToken(session), store: await buildStore(session) })
+})
+
+app.patch('/api/profile', authRequired(['buyer', 'seller', 'admin']), async (req, res) => {
+  const username = String(req.body?.username ?? '').trim()
+  const email = String(req.body?.email ?? '').trim().toLowerCase()
+  const phone = String(req.body?.phone ?? '').trim()
+  const addressLine = String(req.body?.addressLine ?? '').trim()
+  const city = String(req.body?.city ?? '').trim()
+  const road = String(req.body?.road ?? '').trim()
+  const block = String(req.body?.block ?? '').trim()
+  const country = String(req.body?.country ?? '').trim()
+
+  if (!username || !email || !phone) {
+    return res.status(400).json({ message: 'Username, email, and phone are required.' })
+  }
+
+  const conflictingUser = await User.findOne({
+    id: { $ne: req.session.id },
+    $or: [{ email }, { phone }],
+  }).lean()
+
+  if (conflictingUser) {
+    return res.status(409).json({ message: 'Another account already uses that email or phone.' })
+  }
+
+  const user = await User.findOneAndUpdate(
+    { id: req.session.id },
+    {
+      $set: {
+        username,
+        email,
+        phone,
+        addressLine,
+        city,
+        road,
+        block,
+        country,
+      },
+    },
+    { new: true },
+  ).lean()
+
+  if (!user) {
+    return res.status(404).json({ message: 'User not found.' })
+  }
+
+  const session = createSession(user)
+  res.json({ store: await buildStore(session) })
 })
 
 app.post('/api/favorites/:listingId/toggle', authRequired(['buyer', 'seller', 'admin']), async (req, res) => {
@@ -634,9 +709,21 @@ app.patch('/api/admin/sellers/:userId/status', authRequired(['admin']), async (r
 })
 
 app.post('/api/checkout', authRequired(['buyer', 'seller', 'admin']), async (req, res) => {
-  const { address, buyerName, email, listingIds, paymentMethod } = req.body ?? {}
+  const {
+    addressLine,
+    block,
+    buyerName,
+    city,
+    country,
+    email,
+    listingIds,
+    paymentMethod,
+    phone,
+    road,
+  } = req.body ?? {}
   const listings = await Listing.find({ id: { $in: listingIds ?? [] } }).lean()
   const count = await Order.countDocuments()
+  const shippingAddress = [addressLine, city, road, block, country].filter(Boolean).join(', ')
   const createdOrders = await Order.insertMany(
     listings.map((listing, index) => ({
       id: `ord-${1044 + count + index}`,
@@ -646,7 +733,13 @@ app.post('/api/checkout', authRequired(['buyer', 'seller', 'admin']), async (req
       total: listing.price,
       status: 'pending',
       email,
-      shippingAddress: address,
+      phone,
+      addressLine,
+      city,
+      road,
+      block,
+      country,
+      shippingAddress,
       paymentMethod,
       messages: [],
     })),
@@ -675,7 +768,7 @@ app.post('/api/checkout', authRequired(['buyer', 'seller', 'admin']), async (req
     confirmation: {
       buyerName,
       email,
-      address,
+      address: shippingAddress,
       paymentMethod,
       emailSent,
       orderIds: createdOrders.map((order) => order.id),

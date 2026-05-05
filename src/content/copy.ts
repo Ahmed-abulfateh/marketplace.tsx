@@ -7,6 +7,12 @@ type AppCopy = {
     english: string
     arabic: string
     language: string
+    orderId: string
+    product: string
+    seller: string
+    buyer: string
+    status: string
+    totalLabel: string
     save: string
     cancel: string
     viewDetails: string
@@ -34,6 +40,7 @@ type AppCopy = {
     }
     signIn: string
       signUp: string
+    profile: string
     signOut: string
     footerKicker: string
     footerSummary: string
@@ -126,6 +133,13 @@ type AppCopy = {
     orderItemsTitle: string
     buyerName: string
     email: string
+    phone: string
+    addressLine: string
+    city: string
+    road: string
+    block: string
+    country: string
+    useSavedAddress: string
     paymentMethod: string
     shippingAddress: string
     actionsLabel: string
@@ -153,6 +167,30 @@ type AppCopy = {
     title: string
     noOrders: string
     reviewCta: string
+  }
+  profile: {
+    kicker: string
+    title: (role: string) => string
+    summary: string
+    savedAddressLabel: string
+    savedAddressSummary: string
+    formKicker: string
+    formTitle: string
+    save: string
+    fields: {
+      username: string
+      email: string
+      phone: string
+      addressLine: string
+      city: string
+      road: string
+      block: string
+      country: string
+    }
+    notices: {
+      updated: string
+      updateError: string
+    }
   }
   sellerLayout: {
     kicker: string
@@ -340,6 +378,12 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       english: 'English',
       arabic: 'العربية',
       language: 'Language',
+      orderId: 'Order ID',
+      product: 'Product',
+      seller: 'Seller',
+      buyer: 'Buyer',
+      status: 'Status',
+      totalLabel: 'Total',
       save: 'Save',
       cancel: 'Cancel',
       viewDetails: 'View details',
@@ -367,6 +411,7 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       },
       signIn: 'Sign in',
       signUp: 'Sign up',
+      profile: 'Profile',
       signOut: 'Sign out',
       footerKicker: 'Marketplace',
       footerSummary: 'Buyer, seller, and admin surfaces share one accountable transaction loop.',
@@ -485,6 +530,13 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       orderItemsTitle: 'Everything included in this checkout.',
       buyerName: 'Buyer name',
       email: 'Email',
+      phone: 'Phone',
+      addressLine: 'Address',
+      city: 'City',
+      road: 'Road',
+      block: 'Block',
+      country: 'Country',
+      useSavedAddress: 'Use saved profile address by default',
       paymentMethod: 'Payment method',
       shippingAddress: 'Shipping address',
       actionsLabel: 'Checkout actions',
@@ -512,6 +564,30 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       title: 'Track your orders from confirmation to delivery.',
       noOrders: 'You do not have any shipment orders yet.',
       reviewCta: 'Open product to review',
+    },
+    profile: {
+      kicker: 'Profile',
+      title: (role) => `${role} profile and saved address`,
+      summary: 'Keep your contact information and saved delivery address ready for checkout, seller operations, and admin follow-up.',
+      savedAddressLabel: 'Saved checkout defaults',
+      savedAddressSummary: 'Email, phone, address, city, road, block, and country are reused automatically when you enable saved address at checkout.',
+      formKicker: 'Account details',
+      formTitle: 'Update your profile information.',
+      save: 'Save profile',
+      fields: {
+        username: 'Username',
+        email: 'Email',
+        phone: 'Phone',
+        addressLine: 'Address',
+        city: 'City',
+        road: 'Road',
+        block: 'Block',
+        country: 'Country',
+      },
+      notices: {
+        updated: 'Profile updated successfully.',
+        updateError: 'Could not update your profile.',
+      },
     },
     sellerLayout: {
       kicker: 'Seller workspace',
@@ -719,6 +795,12 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       english: 'English',
       arabic: 'العربية',
       language: 'اللغة',
+      orderId: 'رقم الطلب',
+      product: 'المنتج',
+      seller: 'البائع',
+      buyer: 'المشتري',
+      status: 'الحالة',
+      totalLabel: 'الإجمالي',
       save: 'حفظ',
       cancel: 'إلغاء',
       viewDetails: 'عرض التفاصيل',
@@ -746,6 +828,7 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       },
       signIn: 'تسجيل الدخول',
       signUp: 'إنشاء حساب',
+      profile: 'الملف الشخصي',
       signOut: 'تسجيل الخروج',
       footerKicker: 'المتجر',
       footerSummary: 'واجهات المشتري والبائع والإدارة تشترك في دورة معاملات واحدة واضحة المسؤولية.',
@@ -864,6 +947,13 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       orderItemsTitle: 'كل ما يتضمنه هذا الطلب.',
       buyerName: 'اسم المشتري',
       email: 'البريد الإلكتروني',
+      phone: 'رقم الهاتف',
+      addressLine: 'العنوان',
+      city: 'المدينة',
+      road: 'الطريق',
+      block: 'المجمع',
+      country: 'الدولة',
+      useSavedAddress: 'استخدم عنوان الملف الشخصي المحفوظ افتراضيًا',
       paymentMethod: 'طريقة الدفع',
       shippingAddress: 'عنوان الشحن',
       actionsLabel: 'إجراءات الدفع',
@@ -891,6 +981,30 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       title: 'تابع طلباتك من التأكيد حتى التسليم.',
       noOrders: 'لا توجد لديك طلبات شحن حتى الآن.',
       reviewCta: 'افتح المنتج لإضافة تقييم',
+    },
+    profile: {
+      kicker: 'الملف الشخصي',
+      title: (role) => `ملف ${role} والعنوان المحفوظ`,
+      summary: 'احتفظ ببيانات التواصل وعنوان التوصيل المحفوظ جاهزين للاستخدام أثناء الدفع وتشغيل البائع ومتابعة الإدارة.',
+      savedAddressLabel: 'إعدادات الدفع المحفوظة',
+      savedAddressSummary: 'يتم إعادة استخدام البريد الإلكتروني والهاتف والعنوان والمدينة والطريق والمجمع والدولة تلقائيًا عند تفعيل العنوان المحفوظ أثناء الدفع.',
+      formKicker: 'بيانات الحساب',
+      formTitle: 'حدّث معلومات ملفك الشخصي.',
+      save: 'حفظ الملف الشخصي',
+      fields: {
+        username: 'اسم المستخدم',
+        email: 'البريد الإلكتروني',
+        phone: 'رقم الهاتف',
+        addressLine: 'العنوان',
+        city: 'المدينة',
+        road: 'الطريق',
+        block: 'المجمع',
+        country: 'الدولة',
+      },
+      notices: {
+        updated: 'تم تحديث الملف الشخصي بنجاح.',
+        updateError: 'تعذر تحديث الملف الشخصي.',
+      },
     },
     sellerLayout: {
       kicker: 'مساحة البائع',

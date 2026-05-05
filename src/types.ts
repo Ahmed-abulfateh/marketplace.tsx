@@ -13,6 +13,17 @@ export type SignUpInput = {
   role: MarketplaceRole
 }
 
+export type ProfileInput = {
+  username: string
+  email: string
+  phone: string
+  addressLine: string
+  city: string
+  road: string
+  block: string
+  country: string
+}
+
 export type ListingStatus = 'live' | 'review' | 'paused'
 
 export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'delivered'
@@ -78,6 +89,12 @@ export type Order = {
   total: number
   status: OrderStatus
   email: string
+  phone: string
+  addressLine: string
+  city: string
+  road: string
+  block: string
+  country: string
   shippingAddress: string
   paymentMethod: string
   messages: OrderMessage[]
@@ -89,6 +106,11 @@ export type Session = {
   username: string
   email: string
   phone: string
+  addressLine: string
+  city: string
+  road: string
+  block: string
+  country: string
   role: MarketplaceRole
   accountStatus: 'pending' | 'active'
 }
