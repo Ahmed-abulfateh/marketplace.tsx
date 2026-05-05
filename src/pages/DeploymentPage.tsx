@@ -23,9 +23,21 @@ function DeploymentPage() {
     const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
 
     const checkDeploymentStatus = async () => {
+      const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? ''
+      if (!API_BASE) {
+        if (isMounted) {
+          setDeploymentStatus({
+            status: 'error',
+            message: 'No backend URL configured (VITE_API_URL is not set)',
+            mongoDBStatus: 'Unknown',
+            apiHealth: 'Not configured',
+            timestamp: new Date().toLocaleString(),
+          })
+        }
+        return
+      }
       try {
-        // Use relative URL that works from any origin
-        const healthResponse = await fetch('/api/health', {
+        const healthResponse = await fetch(`${API_BASE}/api/health`, {
           signal: controller.signal,
           headers: {
             'Content-Type': 'application/json',
