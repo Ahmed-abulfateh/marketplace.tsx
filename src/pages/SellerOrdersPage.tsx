@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
@@ -10,10 +11,11 @@ type SellerOrdersLocationState = {
 
 function SellerOrdersPage() {
   const { copy, formatCurrency, translateCatalogText, translateOrderStatus } = useLanguage()
-  const { listings, orders, session } = useMarketplace()
+  const { advanceOrderStatus, listings, orders, session } = useMarketplace()
   const [searchParams, setSearchParams] = useSearchParams()
   const location = useLocation()
   const locationState = location.state as SellerOrdersLocationState | null
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null)
 
   const managedListingIds = new Set(
     listings.filter((listing) => listing.seller === session?.name).map((listing) => listing.id),
@@ -45,6 +47,20 @@ function SellerOrdersPage() {
 
     return order.status === activeView
   })
+
+  const handleMarkDelivered = async (orderId: string) => {
+    if (updatingOrderId) {
+      return
+    }
+
+    setUpdatingOrderId(orderId)
+
+    try {
+      await advanceOrderStatus(orderId, 'complete')
+    } finally {
+      setUpdatingOrderId(null)
+    }
+  }
 
   return (
     <section className="market-grid">
@@ -99,9 +115,19 @@ function SellerOrdersPage() {
                   </p>
                 </div>
               </div>
-              <Link className="inline-link" to={`/seller/orders/${order.id}`}>
-                {copy.sellerOrders.detailLink}
-              </Link>
+              <div className="card-actions">
+                <button
+                  type="button"
+                  className="button button-primary"
+                  onClick={() => void handleMarkDelivered(order.id)}
+                  disabled={order.status === 'delivered' || updatingOrderId === order.id}
+                >
+                  {order.status === 'delivered' ? copy.sellerOrderDetail.delivered : 'Mark Delivered / Complete'}
+                </button>
+                <Link className="inline-link" to={`/seller/orders/${order.id}`}>
+                  {copy.sellerOrders.detailLink}
+                </Link>
+              </div>
             </article>
           )
         })}
