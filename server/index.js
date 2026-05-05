@@ -801,7 +801,7 @@ app.post('/api/checkout', authRequired(['buyer', 'seller', 'admin']), async (req
     })),
   )
 
-  await AppState.updateOne({ ownerId: req.session.id }, { $pull: { cartIds: { $in: listingIds ?? [] } } })
+  await AppState.updateOne({ ownerId: req.session.id }, { $set: { cartIds: [] } })
 
   let emailSent = false
 
