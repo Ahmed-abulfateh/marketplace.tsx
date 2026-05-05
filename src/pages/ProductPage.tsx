@@ -273,8 +273,19 @@ function ProductPage() {
   const { listingId } = useParams()
   const navigate = useNavigate()
   const { copy, formatCurrency, language, translateCatalogText, translateListingStatus } = useLanguage()
-  const { cartIds, favoriteIds, isReady, listingStatuses, listings, session, toggleCart, toggleFavorite } =
-    useMarketplace()
+  const {
+    addListingReview,
+    cartIds,
+    favoriteIds,
+    isReady,
+    listingStatuses,
+    listings,
+    orders,
+    sendOrderMessage,
+    session,
+    toggleCart,
+    toggleFavorite,
+  } = useMarketplace()
 
   if (!isReady) {
     return <main className="loading-shell">{copy.common.loading}</main>
@@ -298,6 +309,11 @@ function ProductPage() {
   const sellerInsights = buildSellerInsights(listing)
   const [selectedGalleryIndex, setSelectedGalleryIndex] = useState(0)
   const [selectedVariations, setSelectedVariations] = useState<Record<string, string>>({})
+  const [reviewRating, setReviewRating] = useState(5)
+  const [reviewComment, setReviewComment] = useState('')
+  const [reviewError, setReviewError] = useState<string | null>(null)
+  const [chatText, setChatText] = useState('')
+  const [chatError, setChatError] = useState<string | null>(null)
 
   useEffect(() => {
     setSelectedGalleryIndex(0)
@@ -312,6 +328,67 @@ function ProductPage() {
   }, [details.variations, language, listing.id])
 
   const activeGallery = details.gallery[selectedGalleryIndex] ?? details.gallery[0]
+  const listingOrders = orders.filter((order) => order.listingId === listing.id)
+  const buyerOrders = listingOrders.filter(
+    (order) => order.buyerId === session?.id || order.buyer === session?.name,
+  )
+  const deliveredOrders = buyerOrders.filter((order) => order.status === 'delivered')
+  const reviewOrder = deliveredOrders.find(
+    (order) => !(listing.reviews ?? []).some((review) => review.orderId === order.id),
+  )
+  const canReview = session?.role === 'buyer' && Boolean(reviewOrder)
+  const chatOrder = buyerOrders[0]
+  const canChat = session?.role === 'buyer' && Boolean(chatOrder)
+  const persistedReviews = (listing.reviews ?? []).map((review) => ({
+    author: review.author,
+    rating: review.rating,
+    comment: review.comment,
+    date: review.createdAt,
+  }))
+  const visibleReviews = persistedReviews.length > 0 ? persistedReviews : details.reviews.map((review) => ({
+    author: review.author,
+    rating: review.rating,
+    comment: pickText(review.comment, language),
+    date: review.date,
+  }))
+
+  const handleSubmitReview = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (!reviewOrder) {
+      return
+    }
+
+    setReviewError(null)
+
+    try {
+      await addListingReview(listing.id, {
+        rating: reviewRating,
+        comment: reviewComment.trim(),
+      })
+      setReviewComment('')
+      setReviewRating(5)
+    } catch (error) {
+      setReviewError(error instanceof Error ? error.message : 'Could not submit review.')
+    }
+  }
+
+  const handleSendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (!chatOrder || !chatText.trim()) {
+      return
+    }
+
+    setChatError(null)
+
+    try {
+      await sendOrderMessage(chatOrder.id, chatText.trim())
+      setChatText('')
+    } catch (error) {
+      setChatError(error instanceof Error ? error.message : 'Could not send message.')
+    }
+  }
 
   return (
     <main className="page-stack">
@@ -529,17 +606,74 @@ function ProductPage() {
               <li key={pickText(item, language)}>{pickText(item, language)}</li>
             ))}
           </ul>
+
+          {canChat && chatOrder ? (
+            <>
+              <div className="section-heading compact product-section-spacing">
+                <p className="section-kicker">Live chat</p>
+                <h2>Message seller</h2>
+              </div>
+              <div className="review-grid">
+                {(chatOrder.messages ?? []).length === 0 ? (
+                  <article className="review-card">
+                    <p>No chat messages yet for this order.</p>
+                  </article>
+                ) : (chatOrder.messages ?? []).map((message) => (
+                  <article className="review-card" key={`${message.senderId}-${message.createdAt}-${message.text}`}>
+                    <div className="listing-footer review-header-row">
+                      <div>
+                        <strong>{message.senderName}</strong>
+                        <p className="microcopy">{new Date(message.createdAt).toLocaleString(language === 'ar' ? 'ar-EG' : 'en-US')}</p>
+                      </div>
+                      <span className="badge">{message.senderRole}</span>
+                    </div>
+                    <p>{message.text}</p>
+                  </article>
+                ))}
+              </div>
+              <form className="form-grid compact-form-grid" onSubmit={handleSendMessage}>
+                <textarea
+                  value={chatText}
+                  onChange={(event) => setChatText(event.target.value)}
+                  placeholder="Message seller about your order"
+                  required
+                />
+                {chatError ? <p className="form-notice form-notice-error">{chatError}</p> : null}
+                <button type="submit" className="button button-secondary">Send</button>
+              </form>
+            </>
+          ) : null}
         </aside>
       </section>
 
       <section className="market-grid">
         <div className="section-heading compact">
           <p className="section-kicker">{labels.reviews}</p>
-          <h2>{labels.reviewSummary(details.reviews.length, listing.reviewScore)}</h2>
+          <h2>{labels.reviewSummary(visibleReviews.length, listing.reviewScore)}</h2>
         </div>
+        {canReview ? (
+          <form className="form-grid compact-form-grid" onSubmit={handleSubmitReview}>
+            <label className="form-field">
+              <span className="card-label">Rating</span>
+              <select value={reviewRating} onChange={(event) => setReviewRating(Number(event.target.value))}>
+                {[5, 4, 3, 2, 1].map((value) => (
+                  <option key={value} value={value}>{value}</option>
+                ))}
+              </select>
+            </label>
+            <textarea
+              value={reviewComment}
+              onChange={(event) => setReviewComment(event.target.value)}
+              placeholder="Write your review after delivery"
+              required
+            />
+            {reviewError ? <p className="form-notice form-notice-error">{reviewError}</p> : null}
+            <button type="submit" className="button button-primary">Submit review</button>
+          </form>
+        ) : null}
         <div className="review-grid">
-          {details.reviews.map((review) => (
-            <article className="review-card" key={`${review.author}-${review.date}`}>
+          {visibleReviews.map((review) => (
+            <article className="review-card" key={`${review.author}-${review.date}-${review.comment}`}>
               <div className="listing-footer review-header-row">
                 <div>
                   <strong>{review.author}</strong>
@@ -547,8 +681,7 @@ function ProductPage() {
                 </div>
                 <span className="badge">{renderStars(review.rating)}</span>
               </div>
-              <h3>{pickText(review.title, language)}</h3>
-              <p>{pickText(review.comment, language)}</p>
+              <p>{review.comment}</p>
             </article>
           ))}
         </div>

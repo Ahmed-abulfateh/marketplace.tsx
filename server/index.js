@@ -297,6 +297,19 @@ const findManagedListing = async (req, res) => {
   return listing
 }
 
+const canManageOrder = async (session, order) => {
+  if (session.role === 'admin') {
+    return true
+  }
+
+  if (session.role === 'buyer') {
+    return order.buyerId === session.id || order.buyer === session.name
+  }
+
+  const listing = await Listing.findOne({ id: order.listingId }).lean()
+  return listing?.seller === session.name
+}
+
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true })
 })
@@ -478,12 +491,113 @@ app.patch('/api/orders/:orderId/advance', authRequired(['seller', 'admin']), asy
     return res.status(404).json({ message: 'Order not found.' })
   }
 
+  const canManage = await canManageOrder(req.session, order)
+
+  if (!canManage) {
+    return res.status(403).json({ message: 'You cannot manage this order.' })
+  }
+
   await Order.updateOne(
     { id: req.params.orderId },
     { $set: { status: orderStatusFlow[order.status] ?? order.status } },
   )
 
   res.json({ store: await buildStore(req.session) })
+})
+
+app.post('/api/orders/:orderId/messages', authRequired(['buyer', 'seller', 'admin']), async (req, res) => {
+  const order = await Order.findOne({ id: req.params.orderId }).lean()
+
+  if (!order) {
+    return res.status(404).json({ message: 'Order not found.' })
+  }
+
+  const canManage = await canManageOrder(req.session, order)
+
+  if (!canManage) {
+    return res.status(403).json({ message: 'You cannot message on this order.' })
+  }
+
+  const text = String(req.body?.text ?? '').trim()
+
+  if (!text) {
+    return res.status(400).json({ message: 'Message text is required.' })
+  }
+
+  await Order.updateOne(
+    { id: req.params.orderId },
+    {
+      $push: {
+        messages: {
+          senderId: req.session.id,
+          senderName: req.session.name,
+          senderRole: req.session.role,
+          text,
+        },
+      },
+    },
+  )
+
+  res.status(201).json({ store: await buildStore(req.session) })
+})
+
+app.post('/api/listings/:listingId/reviews', authRequired(['buyer', 'admin']), async (req, res) => {
+  const listing = await Listing.findOne({ id: req.params.listingId }).lean()
+
+  if (!listing) {
+    return res.status(404).json({ message: 'Listing not found.' })
+  }
+
+  const rating = Number(req.body?.rating)
+  const comment = String(req.body?.comment ?? '').trim()
+
+  if (!Number.isFinite(rating) || rating < 1 || rating > 5 || !comment) {
+    return res.status(400).json({ message: 'Rating (1-5) and comment are required.' })
+  }
+
+  const deliveredOrders = await Order.find({ listingId: listing.id, status: 'delivered' }).lean()
+  const matchingOrder = deliveredOrders.find(
+    (order) => order.buyerId === req.session.id || order.buyer === req.session.name,
+  )
+
+  if (!matchingOrder) {
+    return res.status(403).json({ message: 'Only buyers with delivered orders can add reviews.' })
+  }
+
+  if (listing.reviews?.some((review) => review.orderId === matchingOrder.id)) {
+    return res.status(409).json({ message: 'Review already submitted for this order.' })
+  }
+
+  const nextReviews = [
+    ...(listing.reviews ?? []),
+    {
+      orderId: matchingOrder.id,
+      buyerId: req.session.id,
+      author: req.session.name,
+      rating,
+      comment,
+      createdAt: new Date().toISOString(),
+    },
+  ]
+  const nextScore = nextReviews.reduce((sum, review) => sum + review.rating, 0) / nextReviews.length
+
+  await Listing.updateOne(
+    { id: listing.id },
+    {
+      $set: { reviewScore: Number(nextScore.toFixed(1)) },
+      $push: {
+        reviews: {
+          orderId: matchingOrder.id,
+          buyerId: req.session.id,
+          author: req.session.name,
+          rating,
+          comment,
+        },
+      },
+    },
+  )
+
+  res.status(201).json({ store: await buildStore(req.session) })
 })
 
 app.get('/api/admin/sellers', authRequired(['admin']), async (req, res) => {
@@ -527,12 +641,14 @@ app.post('/api/checkout', authRequired(['buyer', 'seller', 'admin']), async (req
     listings.map((listing, index) => ({
       id: `ord-${1044 + count + index}`,
       listingId: listing.id,
+      buyerId: req.session.id,
       buyer: buyerName,
       total: listing.price,
       status: 'pending',
       email,
       shippingAddress: address,
       paymentMethod,
+      messages: [],
     })),
   )
 

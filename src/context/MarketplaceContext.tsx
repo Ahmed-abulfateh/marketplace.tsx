@@ -53,6 +53,8 @@ type MarketplaceContextValue = {
   updateListingStatus: (listingId: string, status: ListingStatus) => Promise<void>
   addModerationNote: (listingId: string, note: string) => Promise<void>
   advanceOrderStatus: (orderId: string) => Promise<void>
+  sendOrderMessage: (orderId: string, text: string) => Promise<void>
+  addListingReview: (listingId: string, payload: { rating: number; comment: string }) => Promise<void>
   updateSellerStatus: (userId: string, status: 'pending' | 'active') => Promise<void>
   clearLastCheckout: () => void
   getOrderStatusLabel: (status: OrderStatus) => string
@@ -114,6 +116,8 @@ function MarketplaceProvider({ children }: PropsWithChildren) {
     updateListingStatus: async (listingId, status) => updateFromApi(marketplaceApi.updateListingStatus(listingId, status)),
     addModerationNote: async (listingId, note) => updateFromApi(marketplaceApi.addModerationNote(listingId, note)),
     advanceOrderStatus: async (orderId) => updateFromApi(marketplaceApi.advanceOrderStatus(orderId)),
+    sendOrderMessage: async (orderId, text) => updateFromApi(marketplaceApi.sendOrderMessage(orderId, text)),
+    addListingReview: async (listingId, payload) => updateFromApi(marketplaceApi.addListingReview(listingId, payload)),
     updateSellerStatus: async (userId, status) => updateFromApi(marketplaceApi.updateSellerStatus(userId, status)),
     clearLastCheckout: () => setLastCheckout(null),
     getOrderStatusLabel: (status) => status.replace(/^./, (char) => char.toUpperCase()),

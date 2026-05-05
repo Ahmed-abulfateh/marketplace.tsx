@@ -8,6 +8,17 @@ const moderationNoteSchema = new mongoose.Schema(
   { timestamps: { createdAt: true, updatedAt: false }, _id: false },
 )
 
+const reviewSchema = new mongoose.Schema(
+  {
+    orderId: { type: String, required: true },
+    buyerId: { type: String, required: true },
+    author: { type: String, required: true },
+    rating: { type: Number, min: 1, max: 5, required: true },
+    comment: { type: String, required: true },
+  },
+  { timestamps: { createdAt: true, updatedAt: false }, _id: false },
+)
+
 const listingSchema = new mongoose.Schema(
   {
     id: { type: String, required: true, unique: true },
@@ -24,6 +35,7 @@ const listingSchema = new mongoose.Schema(
     inventory: { type: Number, required: true },
     status: { type: String, enum: ['live', 'review', 'paused'], required: true },
     moderationNotes: { type: [moderationNoteSchema], default: [] },
+    reviews: { type: [reviewSchema], default: [] },
   },
   { timestamps: true },
 )

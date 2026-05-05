@@ -145,6 +145,22 @@ const marketplaceApi = {
     return response.store
   },
 
+  sendOrderMessage: async (orderId: string, text: string) => {
+    const response = await request<StoreResponse>(`/api/orders/${orderId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    })
+    return response.store
+  },
+
+  addListingReview: async (listingId: string, payload: { rating: number; comment: string }) => {
+    const response = await request<StoreResponse>(`/api/listings/${listingId}/reviews`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+    return response.store
+  },
+
   updateSellerStatus: async (userId: string, status: 'pending' | 'active') => {
     const response = await request<StoreResponse>(`/api/admin/sellers/${userId}/status`, {
       method: 'PATCH',

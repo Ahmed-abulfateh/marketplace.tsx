@@ -23,6 +23,23 @@ export type ModerationNote = {
   createdAt: string
 }
 
+export type ListingReview = {
+  orderId: string
+  buyerId: string
+  author: string
+  rating: number
+  comment: string
+  createdAt: string
+}
+
+export type OrderMessage = {
+  senderId: string
+  senderName: string
+  senderRole: MarketplaceRole
+  text: string
+  createdAt: string
+}
+
 export type Listing = {
   id: string
   title: string
@@ -38,6 +55,7 @@ export type Listing = {
   inventory: number
   status: ListingStatus
   moderationNotes: ModerationNote[]
+  reviews: ListingReview[]
 }
 
 export type ListingEditorInput = {
@@ -55,12 +73,14 @@ export type ListingEditorInput = {
 export type Order = {
   id: string
   listingId: string
+  buyerId: string
   buyer: string
   total: number
   status: OrderStatus
   email: string
   shippingAddress: string
   paymentMethod: string
+  messages: OrderMessage[]
 }
 
 export type Session = {

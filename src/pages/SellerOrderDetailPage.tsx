@@ -6,9 +6,11 @@ import { useMarketplace } from '../context/MarketplaceContext'
 function SellerOrderDetailPage() {
   const { orderId } = useParams()
   const navigate = useNavigate()
-  const { copy, formatCurrency, translateCatalogText, translateOrderStatus } = useLanguage()
-  const { advanceOrderStatus, isReady, listings, orders, session } = useMarketplace()
+  const { copy, formatCurrency, language, translateCatalogText, translateOrderStatus } = useLanguage()
+  const { advanceOrderStatus, isReady, listings, orders, sendOrderMessage, session } = useMarketplace()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [messageText, setMessageText] = useState('')
+  const [chatError, setChatError] = useState<string | null>(null)
 
   if (!isReady) {
     return <main className="loading-shell">{copy.common.loading}</main>
@@ -50,6 +52,25 @@ function SellerOrderDetailPage() {
     }
   }
 
+  const handleSendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    const text = messageText.trim()
+
+    if (!text) {
+      return
+    }
+
+    setChatError(null)
+
+    try {
+      await sendOrderMessage(order.id, text)
+      setMessageText('')
+    } catch (error) {
+      setChatError(error instanceof Error ? error.message : 'Could not send message.')
+    }
+  }
+
   return (
     <section className="product-layout">
       <article className="product-panel">
@@ -71,6 +92,30 @@ function SellerOrderDetailPage() {
             <strong>{translateOrderStatus(order.status)}</strong>
           </div>
         </div>
+        <div className="section-heading compact product-section-spacing">
+          <p className="section-kicker">Live chat</p>
+          <h2>Buyer and seller thread</h2>
+        </div>
+        <div className="review-grid">
+          {(order.messages ?? []).length === 0 ? (
+            <article className="review-card">
+              <p>No messages yet for this order.</p>
+            </article>
+          ) : (order.messages ?? []).map((message) => (
+            <article className="review-card" key={`${message.senderId}-${message.createdAt}-${message.text}`}>
+              <div className="listing-footer review-header-row">
+                <div>
+                  <strong>{message.senderName}</strong>
+                  <p className="microcopy">
+                    {new Date(message.createdAt).toLocaleString(language === 'ar' ? 'ar-EG' : 'en-US')}
+                  </p>
+                </div>
+                <span className="badge">{message.senderRole}</span>
+              </div>
+              <p>{message.text}</p>
+            </article>
+          ))}
+        </div>
       </article>
       <aside className="purchase-panel">
         <p className="card-label">{copy.sellerOrderDetail.actionsLabel}</p>
@@ -89,6 +134,16 @@ function SellerOrderDetailPage() {
             {copy.sellerOrderDetail.back}
           </Link>
         </div>
+        <form className="form-grid compact-form-grid" onSubmit={handleSendMessage}>
+          <textarea
+            value={messageText}
+            onChange={(event) => setMessageText(event.target.value)}
+            placeholder="Write a message to the buyer"
+            required
+          />
+          {chatError ? <p className="form-notice form-notice-error">{chatError}</p> : null}
+          <button type="submit" className="button button-secondary">Send message</button>
+        </form>
       </aside>
     </section>
   )

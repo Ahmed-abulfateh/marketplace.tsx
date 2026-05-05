@@ -1,9 +1,20 @@
 import mongoose from 'mongoose'
 
+const messageSchema = new mongoose.Schema(
+  {
+    senderId: { type: String, required: true },
+    senderName: { type: String, required: true },
+    senderRole: { type: String, enum: ['buyer', 'seller', 'admin'], required: true },
+    text: { type: String, required: true },
+  },
+  { timestamps: { createdAt: true, updatedAt: false }, _id: false },
+)
+
 const orderSchema = new mongoose.Schema(
   {
     id: { type: String, required: true, unique: true },
     listingId: { type: String, required: true },
+    buyerId: { type: String, default: '' },
     buyer: { type: String, required: true },
     total: { type: Number, required: true },
     status: {
@@ -14,6 +25,7 @@ const orderSchema = new mongoose.Schema(
     email: { type: String, default: '' },
     shippingAddress: { type: String, default: '' },
     paymentMethod: { type: String, default: '' },
+    messages: { type: [messageSchema], default: [] },
   },
   { timestamps: true },
 )
