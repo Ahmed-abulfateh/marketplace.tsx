@@ -7,7 +7,10 @@ function ShipmentsPage() {
   const { listings, orders, session } = useMarketplace()
 
   const buyerOrders = orders.filter(
-    (order) => order.buyerId === session?.id || order.buyer === session?.name,
+    (order) =>
+      order.buyerId === session?.id ||
+      order.buyer === session?.name ||
+      (session?.email && order.email === session.email),
   )
 
   return (

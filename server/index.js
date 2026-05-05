@@ -320,12 +320,22 @@ const canManageOrder = async (session, order) => {
     return true
   }
 
-  if (session.role === 'buyer') {
-    return order.buyerId === session.id || order.buyer === session.name
+  // Any role: order placed by this user (buyer side).
+  if (
+    order.buyerId === session.id ||
+    order.buyer === session.name ||
+    (session.email && order.email === session.email)
+  ) {
+    return true
   }
 
-  const listing = await Listing.findOne({ id: order.listingId }).lean()
-  return listing?.seller === session.name
+  // Seller: also allowed if they own the listing (seller side).
+  if (session.role === 'seller') {
+    const listing = await Listing.findOne({ id: order.listingId }).lean()
+    return listing?.seller === session.name
+  }
+
+  return false
 }
 
 app.get('/api/health', (_req, res) => {
