@@ -1,11 +1,14 @@
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
 
 function SellerOrderDetailPage() {
   const { orderId } = useParams()
+  const navigate = useNavigate()
   const { copy, formatCurrency, translateCatalogText, translateOrderStatus } = useLanguage()
-  const { advanceOrderStatus, isReady, listings, orders } = useMarketplace()
+  const { advanceOrderStatus, isReady, listings, orders, session } = useMarketplace()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   if (!isReady) {
     return <main className="loading-shell">{copy.common.loading}</main>
@@ -18,6 +21,34 @@ function SellerOrderDetailPage() {
   }
 
   const listing = listings.find((item) => item.id === order.listingId)
+
+  const isManagedBySeller = session?.role !== 'seller' || listing?.seller === session?.name
+
+  if (!isManagedBySeller) {
+    return <Navigate to="/seller/orders" replace />
+  }
+
+  const handleAdvanceOrder = async () => {
+    if (isSubmitting) {
+      return
+    }
+
+    const wasPending = order.status === 'pending'
+    setIsSubmitting(true)
+
+    try {
+      await advanceOrderStatus(order.id)
+
+      if (wasPending) {
+        navigate('/seller/orders?view=to-ship', {
+          replace: true,
+          state: { notice: copy.sellerOrders.confirmedNotice },
+        })
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <section className="product-layout">
@@ -49,8 +80,8 @@ function SellerOrderDetailPage() {
           <button
             type="button"
             className="button button-primary"
-            onClick={() => void advanceOrderStatus(order.id)}
-            disabled={order.status === 'delivered'}
+            onClick={() => void handleAdvanceOrder()}
+            disabled={order.status === 'delivered' || isSubmitting}
           >
             {order.status === 'delivered' ? copy.sellerOrderDetail.delivered : copy.sellerOrderDetail.advance}
           </button>

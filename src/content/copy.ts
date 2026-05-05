@@ -161,6 +161,14 @@ type AppCopy = {
   sellerOrders: {
     kicker: string
     title: string
+    filters: {
+      all: string
+      toShip: string
+      shipped: string
+      delivered: string
+    }
+    confirmedNotice: string
+    noOrders: string
     detailLink: string
   }
   sellerOrderDetail: {
@@ -505,6 +513,14 @@ export const copyByLanguage: Record<Language, AppCopy> = {
     sellerOrders: {
       kicker: 'Seller orders',
       title: 'Track every order through confirmation, shipment, and delivery.',
+      filters: {
+        all: 'All orders',
+        toShip: 'To ship',
+        shipped: 'Shipped',
+        delivered: 'Delivered',
+      },
+      confirmedNotice: 'Order confirmed and moved to the To Ship queue.',
+      noOrders: 'No orders found for this queue yet.',
       detailLink: 'View order detail',
     },
     sellerOrderDetail: {
@@ -869,6 +885,14 @@ export const copyByLanguage: Record<Language, AppCopy> = {
     sellerOrders: {
       kicker: 'طلبات البائع',
       title: 'تابع كل طلب من التأكيد حتى الشحن والتسليم.',
+      filters: {
+        all: 'كل الطلبات',
+        toShip: 'جاهزة للشحن',
+        shipped: 'تم الشحن',
+        delivered: 'تم التسليم',
+      },
+      confirmedNotice: 'تم تأكيد الطلب ونقله إلى قائمة جاهز للشحن.',
+      noOrders: 'لا توجد طلبات في هذه القائمة حتى الآن.',
       detailLink: 'عرض تفاصيل الطلب',
     },
     sellerOrderDetail: {
