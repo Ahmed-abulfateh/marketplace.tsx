@@ -1,17 +1,37 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
+
+type ShipmentsLocationState = {
+  confirmation?: {
+    orderIds: string[]
+  }
+}
 
 function ShipmentsPage() {
   const { copy, formatCurrency, translateCatalogText, translateOrderStatus } = useLanguage()
   const { listings, orders, session } = useMarketplace()
+  const location = useLocation()
+  const locationState = location.state as ShipmentsLocationState | null
+  const highlightedOrderIds = new Set(locationState?.confirmation?.orderIds ?? [])
 
-  const buyerOrders = orders.filter(
-    (order) =>
-      order.buyerId === session?.id ||
-      order.buyer === session?.name ||
-      (session?.email && order.email === session.email),
-  )
+  const buyerOrders = orders
+    .filter(
+      (order) =>
+        order.buyerId === session?.id ||
+        order.buyer === session?.name ||
+        (session?.email && order.email === session.email),
+    )
+    .sort((left, right) => {
+      const leftHighlighted = highlightedOrderIds.has(left.id)
+      const rightHighlighted = highlightedOrderIds.has(right.id)
+
+      if (leftHighlighted === rightHighlighted) {
+        return 0
+      }
+
+      return leftHighlighted ? -1 : 1
+    })
 
   return (
     <section className="market-grid">
@@ -19,6 +39,11 @@ function ShipmentsPage() {
         <p className="section-kicker">{copy.shipments.kicker}</p>
         <h2>{copy.shipments.title}</h2>
       </div>
+      {highlightedOrderIds.size > 0 ? (
+        <p className="form-notice form-notice-success">
+          Order confirmed. You can now track {Array.from(highlightedOrderIds).join(', ')} here.
+        </p>
+      ) : null}
       <div className="queue-grid admin-order-grid">
         {buyerOrders.length === 0 ? (
           <article className="queue-card">

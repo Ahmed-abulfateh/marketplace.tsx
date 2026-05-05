@@ -54,6 +54,22 @@ const allowedOrigins = Array.from(
   ].filter(Boolean)),
 )
 
+const isAllowedOrigin = (origin) => {
+  if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+    return true
+  }
+
+  try {
+    const parsedOrigin = new URL(origin)
+    const isLocalhost = ['localhost', '127.0.0.1'].includes(parsedOrigin.hostname)
+    const hasDevPort = /^\d+$/.test(parsedOrigin.port)
+
+    return isLocalhost && hasDevPort
+  } catch {
+    return false
+  }
+}
+
 const mailTransport =
   process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS
     ? nodemailer.createTransport({
@@ -71,7 +87,7 @@ app.use(
   '/api',
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      if (isAllowedOrigin(origin)) {
         callback(null, true)
         return
       }

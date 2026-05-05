@@ -24,14 +24,20 @@ const writeToken = (token: string | null) => {
 
 const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
   const token = readToken()
-  const response = await fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(init?.headers ?? {}),
-    },
-  })
+  let response: Response
+
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      ...init,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(init?.headers ?? {}),
+      },
+    })
+  } catch {
+    throw new Error('Could not reach the marketplace server. Check that the backend is running and try again.')
+  }
 
   if (!response.ok) {
     let message = `Request failed: ${response.status}`

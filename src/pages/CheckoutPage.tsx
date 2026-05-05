@@ -56,7 +56,7 @@ function CheckoutPage() {
     setIsSubmitting(true)
 
     try {
-      await checkout({
+      const confirmation = await checkout({
         listingIds: checkoutListings.map((listing) => listing.id),
         buyerName: form.buyerName,
         email: form.email,
@@ -69,7 +69,10 @@ function CheckoutPage() {
         paymentMethod: form.paymentMethod,
       })
 
-      navigate('/shipments', { replace: true })
+      navigate('/shipments', {
+        replace: true,
+        state: { confirmation },
+      })
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'Checkout failed. Please try again.')
     } finally {
