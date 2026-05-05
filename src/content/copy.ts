@@ -215,6 +215,7 @@ type AppCopy = {
   adminLayout: {
     kicker: string
     dashboard: string
+    consumers: string
     moderation: string
     sellers: string
   }
@@ -627,6 +628,7 @@ export const copyByLanguage: Record<Language, AppCopy> = {
     adminLayout: {
       kicker: 'Admin workspace',
       dashboard: 'Dashboard',
+      consumers: 'Consumers',
       moderation: 'Moderation',
       sellers: 'Sellers',
     },
@@ -1059,6 +1061,7 @@ export const copyByLanguage: Record<Language, AppCopy> = {
     adminLayout: {
       kicker: 'مساحة الإدارة',
       dashboard: 'لوحة التحكم',
+      consumers: 'المستهلكون',
       moderation: 'المراجعة',
       sellers: 'البائعون',
     },

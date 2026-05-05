@@ -12,6 +12,9 @@ function AdminLayout() {
           <NavLink end to="/admin" className={({ isActive }) => (isActive ? 'subnav-link subnav-link-active' : 'subnav-link')}>
             {copy.adminLayout.dashboard}
           </NavLink>
+          <NavLink to="/admin/consumers" className={({ isActive }) => (isActive ? 'subnav-link subnav-link-active' : 'subnav-link')}>
+            {copy.adminLayout.consumers}
+          </NavLink>
           <NavLink to="/admin/moderation" className={({ isActive }) => (isActive ? 'subnav-link subnav-link-active' : 'subnav-link')}>
             {copy.adminLayout.moderation}
           </NavLink>

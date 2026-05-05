@@ -8,6 +8,7 @@ import AdminPage from './pages/AdminPage'
 import AdminModerationDetailPage from './pages/AdminModerationDetailPage'
 import AdminModerationPage from './pages/AdminModerationPage'
 import AdminSellersPage from './pages/AdminSellersPage'
+import AdminConsumersPage from './pages/AdminConsumersPage'
 import BrowsePage from './pages/BrowsePage'
 import CheckoutPage from './pages/CheckoutPage'
 import CheckoutSuccessPage from './pages/CheckoutSuccessPage'
@@ -51,6 +52,7 @@ function App() {
         <Route element={<ProtectedRoute roles={['admin']} />}>
           <Route path="admin" element={<AdminLayout />}>
             <Route index element={<AdminPage />} />
+            <Route path="consumers" element={<AdminConsumersPage />} />
             <Route path="moderation" element={<AdminModerationPage />} />
             <Route path="moderation/:listingId" element={<AdminModerationDetailPage />} />
             <Route path="sellers" element={<AdminSellersPage />} />
