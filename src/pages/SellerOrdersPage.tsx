@@ -94,7 +94,9 @@ function SellerOrdersPage() {
                 </div>
                 <div>
                   <span className="product-label">{copy.common.status}</span>
-                  <p>{translateOrderStatus(order.status)}</p>
+                  <p className={order.status === 'delivered' ? 'order-status order-status-complete' : 'order-status'}>
+                    {translateOrderStatus(order.status)}
+                  </p>
                 </div>
               </div>
               <Link className="inline-link" to={`/seller/orders/${order.id}`}>

@@ -59,7 +59,7 @@ type MarketplaceContextValue = {
   deleteListing: (listingId: string) => Promise<void>
   updateListingStatus: (listingId: string, status: ListingStatus) => Promise<void>
   addModerationNote: (listingId: string, note: string) => Promise<void>
-  advanceOrderStatus: (orderId: string) => Promise<void>
+  advanceOrderStatus: (orderId: string, status?: 'delivered' | 'complete') => Promise<void>
   sendOrderMessage: (orderId: string, text: string) => Promise<void>
   addListingReview: (listingId: string, payload: { rating: number; comment: string }) => Promise<void>
   updateSellerStatus: (userId: string, status: 'pending' | 'active') => Promise<void>
@@ -123,7 +123,7 @@ function MarketplaceProvider({ children }: PropsWithChildren) {
     deleteListing: async (listingId) => updateFromApi(marketplaceApi.deleteListing(listingId)),
     updateListingStatus: async (listingId, status) => updateFromApi(marketplaceApi.updateListingStatus(listingId, status)),
     addModerationNote: async (listingId, note) => updateFromApi(marketplaceApi.addModerationNote(listingId, note)),
-    advanceOrderStatus: async (orderId) => updateFromApi(marketplaceApi.advanceOrderStatus(orderId)),
+    advanceOrderStatus: async (orderId, status) => updateFromApi(marketplaceApi.advanceOrderStatus(orderId, status)),
     sendOrderMessage: async (orderId, text) => updateFromApi(marketplaceApi.sendOrderMessage(orderId, text)),
     addListingReview: async (listingId, payload) => updateFromApi(marketplaceApi.addListingReview(listingId, payload)),
     updateSellerStatus: async (userId, status) => updateFromApi(marketplaceApi.updateSellerStatus(userId, status)),

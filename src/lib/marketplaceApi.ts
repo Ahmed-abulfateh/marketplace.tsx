@@ -147,9 +147,10 @@ const marketplaceApi = {
     return response.store
   },
 
-  advanceOrderStatus: async (orderId: string) => {
+  advanceOrderStatus: async (orderId: string, status?: 'delivered' | 'complete') => {
     const response = await request<StoreResponse>(`/api/orders/${orderId}/advance`, {
       method: 'PATCH',
+      body: JSON.stringify(status ? { status } : {}),
     })
     return response.store
   },

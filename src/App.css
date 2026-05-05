@@ -902,6 +902,14 @@ html[dir='rtl'] .auth-header {
   margin: 0.25rem 0 0;
 }
 
+.order-status {
+  font-weight: 600;
+}
+
+.order-status-complete {
+  color: #21c46b;
+}
+
 .listing-meta-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }

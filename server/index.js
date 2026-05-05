@@ -628,10 +628,34 @@ app.patch('/api/orders/:orderId/advance', authRequired(['seller', 'admin']), asy
     return res.status(403).json({ message: 'You cannot manage this order.' })
   }
 
+  const requestedStatus = String(req.body?.status ?? '').trim().toLowerCase()
+  const requestedDelivered = requestedStatus === 'delivered' || requestedStatus === 'complete'
+
+  if (requestedStatus && !requestedDelivered) {
+    return res.status(400).json({ message: 'Only delivered (or complete) is supported for manual status updates.' })
+  }
+
+  const nextStatus = requestedDelivered
+    ? 'delivered'
+    : orderStatusFlow[order.status] ?? order.status
+
   await Order.updateOne(
     { id: req.params.orderId },
-    { $set: { status: orderStatusFlow[order.status] ?? order.status } },
+    { $set: { status: nextStatus } },
   )
+
+  if (mailTransport && order.email && nextStatus !== order.status) {
+    try {
+      await mailTransport.sendMail({
+        from: process.env.WORKSPACE_EMAIL || process.env.SMTP_USER,
+        to: order.email,
+        subject: `Signal Market order ${order.id} status updated`,
+        text: `Your order ${order.id} is now ${nextStatus}.`,
+      })
+    } catch (error) {
+      console.error('Order status email failed:', error)
+    }
+  }
 
   res.json({ store: await buildStore(req.session) })
 })

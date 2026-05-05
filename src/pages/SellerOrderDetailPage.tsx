@@ -39,7 +39,8 @@ function SellerOrderDetailPage() {
     setIsSubmitting(true)
 
     try {
-      await advanceOrderStatus(order.id)
+      const requestedStatus = order.status === 'shipped' ? 'complete' : undefined
+      await advanceOrderStatus(order.id, requestedStatus)
 
       if (wasPending) {
         navigate('/seller/orders?view=to-ship', {
@@ -89,7 +90,9 @@ function SellerOrderDetailPage() {
           </div>
           <div>
             <span className="product-label">{copy.sellerOrderDetail.status}</span>
-            <strong>{translateOrderStatus(order.status)}</strong>
+            <strong className={order.status === 'delivered' ? 'order-status order-status-complete' : 'order-status'}>
+              {translateOrderStatus(order.status)}
+            </strong>
           </div>
         </div>
         <div className="section-heading compact product-section-spacing">
@@ -128,7 +131,11 @@ function SellerOrderDetailPage() {
             onClick={() => void handleAdvanceOrder()}
             disabled={order.status === 'delivered' || isSubmitting}
           >
-            {order.status === 'delivered' ? copy.sellerOrderDetail.delivered : copy.sellerOrderDetail.advance}
+            {order.status === 'delivered'
+              ? copy.sellerOrderDetail.delivered
+              : order.status === 'shipped'
+                ? 'Mark Delivered / Complete'
+                : copy.sellerOrderDetail.advance}
           </button>
           <Link className="inline-link" to="/seller/orders">
             {copy.sellerOrderDetail.back}

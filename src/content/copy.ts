@@ -1264,8 +1264,8 @@ const listingStatusLabels: Record<Language, Record<ListingStatus, string>> = {
 }
 
 const orderStatusLabels: Record<Language, Record<OrderStatus, string>> = {
-  en: { pending: 'Pending', paid: 'Paid', shipped: 'Shipped', delivered: 'Delivered' },
-  ar: { pending: 'قيد الانتظار', paid: 'مدفوع', shipped: 'تم الشحن', delivered: 'تم التسليم' },
+  en: { pending: 'Pending', paid: 'Paid', shipped: 'Shipped', delivered: 'Delivered / Complete' },
+  ar: { pending: 'قيد الانتظار', paid: 'مدفوع', shipped: 'تم الشحن', delivered: 'تم التسليم / مكتمل' },
 }
 
 const catalogTranslations: Record<string, string> = {
