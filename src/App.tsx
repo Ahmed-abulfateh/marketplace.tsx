@@ -20,6 +20,7 @@ import ProductPage from './pages/ProductPage'
 import ShipmentsPage from './pages/ShipmentsPage.tsx'
 import SellerOrderDetailPage from './pages/SellerOrderDetailPage'
 import SellerOrdersPage from './pages/SellerOrdersPage'
+import SellerProductsPage from './pages/SellerProductsPage.tsx'
 import SellerPage from './pages/SellerPage'
 import SignInPage from './pages/SignInPage'
 import SignUpPage from './pages/SignUpPage'
@@ -45,6 +46,7 @@ function App() {
         <Route element={<ProtectedRoute roles={['seller']} />}>
           <Route path="seller" element={<SellerLayout />}>
             <Route index element={<SellerPage />} />
+            <Route path="products" element={<SellerProductsPage />} />
             <Route path="orders" element={<SellerOrdersPage />} />
             <Route path="orders/:orderId" element={<SellerOrderDetailPage />} />
           </Route>

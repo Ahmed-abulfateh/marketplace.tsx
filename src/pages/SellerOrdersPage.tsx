@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
+import { formatDateTimeGmt3 } from '../lib/dateTime'
 import type { OrderStatus } from '../types'
 
 type QueueView = 'all' | 'to-ship' | 'shipped' | 'delivered'
@@ -11,7 +12,7 @@ type SellerOrdersLocationState = {
 }
 
 function SellerOrdersPage() {
-  const { copy, formatCurrency, translateCatalogText, translateOrderStatus } = useLanguage()
+  const { copy, formatCurrency, language, translateCatalogText, translateOrderStatus } = useLanguage()
   const { advanceOrderStatus, listings, orders, session } = useMarketplace()
   const [searchParams, setSearchParams] = useSearchParams()
   const location = useLocation()
@@ -267,6 +268,7 @@ function SellerOrdersPage() {
                 <th>{copy.common.buyer}</th>
                 <th>{copy.common.totalLabel}</th>
                 <th>{copy.common.status}</th>
+                <th>Ordered At (GMT+3)</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -297,6 +299,7 @@ function SellerOrdersPage() {
                         {translateOrderStatus(status)}
                       </span>
                     </td>
+                    <td>{formatDateTimeGmt3(order.createdAt, language)}</td>
                     <td>
                       <div className="table-row-actions">
                         <button

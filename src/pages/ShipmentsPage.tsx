@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
+import { formatDateTimeGmt3 } from '../lib/dateTime'
 import { getListingImages } from '../lib/listingImages'
 
 type ShipmentsLocationState = {
@@ -10,7 +11,7 @@ type ShipmentsLocationState = {
 }
 
 function ShipmentsPage() {
-  const { copy, formatCurrency, translateCatalogText, translateOrderStatus } = useLanguage()
+  const { copy, formatCurrency, language, translateCatalogText, translateOrderStatus } = useLanguage()
   const { listings, orders, session } = useMarketplace()
   const location = useLocation()
   const locationState = location.state as ShipmentsLocationState | null
@@ -80,6 +81,10 @@ function ShipmentsPage() {
                     {translateOrderStatus(order.status)}
                   </p>
                 </div>
+                <div>
+                  <span className="product-label">Ordered at</span>
+                  <p>{formatDateTimeGmt3(order.createdAt, language)}</p>
+                </div>
               </div>
               {showShipmentMedia ? (
                 <div className="shipment-media-block">
@@ -88,17 +93,6 @@ function ShipmentsPage() {
                     src={shipmentImages[0]}
                     alt={listing ? translateCatalogText(listing.title) : order.listingId}
                   />
-                  <div>
-                    <span className="product-label">Image URL</span>
-                    <a
-                      className="shipment-media-link"
-                      href={shipmentImages[0]}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {shipmentImages[0]}
-                    </a>
-                  </div>
                 </div>
               ) : null}
               {order.status === 'shipped' || order.status === 'delivered' ? (

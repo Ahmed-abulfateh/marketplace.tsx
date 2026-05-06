@@ -12,6 +12,9 @@ function SellerLayout() {
           <NavLink end to="/seller" className={({ isActive }) => (isActive ? 'subnav-link subnav-link-active' : 'subnav-link')}>
             {copy.sellerLayout.dashboard}
           </NavLink>
+          <NavLink to="/seller/products" className={({ isActive }) => (isActive ? 'subnav-link subnav-link-active' : 'subnav-link')}>
+            My Products
+          </NavLink>
           <NavLink to="/seller/orders" className={({ isActive }) => (isActive ? 'subnav-link subnav-link-active' : 'subnav-link')}>
             {copy.sellerLayout.orders}
           </NavLink>

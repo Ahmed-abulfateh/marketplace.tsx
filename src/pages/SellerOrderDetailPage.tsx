@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
+import { formatDateTimeGmt3 } from '../lib/dateTime'
 
 function SellerOrderDetailPage() {
   const { orderId } = useParams()
@@ -100,6 +101,10 @@ function SellerOrderDetailPage() {
             <strong className={isDelivered ? 'order-status order-status-complete' : 'order-status'}>
               {translateOrderStatus(isDelivered ? 'delivered' : order.status)}
             </strong>
+          </div>
+          <div>
+            <span className="product-label">Ordered at</span>
+            <strong>{formatDateTimeGmt3(order.createdAt, language)}</strong>
           </div>
         </div>
         <div className="section-heading compact product-section-spacing">

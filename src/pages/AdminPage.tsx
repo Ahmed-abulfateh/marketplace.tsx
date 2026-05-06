@@ -1,9 +1,10 @@
 import PageHero from '../components/PageHero'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
+import { formatDateTimeGmt3 } from '../lib/dateTime'
 
 function AdminPage() {
-  const { copy, translateCatalogText, translateListingStatus, translateOrderStatus } = useLanguage()
+  const { copy, language, translateCatalogText, translateListingStatus, translateOrderStatus } = useLanguage()
   const { advanceOrderStatus, listingStatuses, listings, orders } = useMarketplace()
   const totalUnits = listings.reduce((sum, listing) => sum + listing.inventory, 0)
   const lowStockCount = listings.filter((listing) => listing.inventory > 0 && listing.inventory <= 5).length
@@ -74,6 +75,7 @@ function AdminPage() {
                   <p className="card-label">{order.id}</p>
                   <h3>{listing ? translateCatalogText(listing.title) : order.listingId}</h3>
                   <p>{order.buyer}</p>
+                  <p className="microcopy">Ordered at: {formatDateTimeGmt3(order.createdAt, language)}</p>
                   <div className="listing-footer">
                     <strong>{translateOrderStatus(order.status)}</strong>
                     <span>{translateListingStatus(listingStatuses[order.listingId] ?? listing?.status ?? 'live')}</span>

@@ -86,6 +86,7 @@ export type ListingEditorInput = {
 export type Order = {
   id: string
   listingId: string
+  createdAt: string
   buyerId: string
   buyer: string
   total: number
