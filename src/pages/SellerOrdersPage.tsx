@@ -251,28 +251,95 @@ function SellerOrdersPage() {
             <p>{copy.sellerOrders.noOrders}</p>
           </article>
         ) : (
-          <table className="orders-table">
-            <thead>
-              <tr>
-                <th>
-                  <input
-                    type="checkbox"
-                    checked={isAllSelectableChecked}
-                    onChange={handleToggleSelectAll}
-                    disabled={selectableOrders.length === 0 || updatingOrderIds.length > 0}
-                    aria-label="Select all orders"
-                  />
-                </th>
-                <th>{copy.common.orderId}</th>
-                <th>{copy.common.product}</th>
-                <th>{copy.common.buyer}</th>
-                <th>{copy.common.totalLabel}</th>
-                <th>{copy.common.status}</th>
-                <th>Ordered At (GMT+3)</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            <table className="orders-table orders-table-desktop">
+              <thead>
+                <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      checked={isAllSelectableChecked}
+                      onChange={handleToggleSelectAll}
+                      disabled={selectableOrders.length === 0 || updatingOrderIds.length > 0}
+                      aria-label="Select all orders"
+                    />
+                  </th>
+                  <th>{copy.common.orderId}</th>
+                  <th>{copy.common.product}</th>
+                  <th>{copy.common.buyer}</th>
+                  <th>{copy.common.totalLabel}</th>
+                  <th>{copy.common.status}</th>
+                  <th>Ordered At (GMT+3)</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibleOrders.map((order) => {
+                  const status = getOrderStatus(order.id, order.status)
+                  const listing = listings.find((item) => item.id === order.listingId)
+                  const isDelivered = status === 'delivered'
+                  const isUpdating = updatingOrderIds.includes(order.id)
+
+                  return (
+                    <tr key={order.id}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selectedOrderIds.includes(order.id)}
+                          onChange={() => handleToggleOrderSelection(order.id)}
+                          disabled={updatingOrderIds.length > 0}
+                          aria-label={`Select order ${order.id}`}
+                        />
+                      </td>
+                      <td>{order.id}</td>
+                      <td>{listing ? translateCatalogText(listing.title) : order.listingId}</td>
+                      <td>{order.buyer}</td>
+                      <td>{formatCurrency(order.total)}</td>
+                      <td>
+                        <span className={isDelivered ? 'order-status order-status-complete' : 'order-status'}>
+                          {translateOrderStatus(status)}
+                        </span>
+                      </td>
+                      <td>{formatDateTimeGmt3(order.createdAt, language)}</td>
+                      <td>
+                        <div className="table-row-actions">
+                          <button
+                            type="button"
+                            className="button button-secondary"
+                            onClick={() => void handleMarkPending(order.id)}
+                            disabled={isUpdating || status === 'pending' || updatingOrderIds.length > 0}
+                          >
+                            {status === 'pending' ? 'Pending' : 'Set Pending'}
+                          </button>
+                          <button
+                            type="button"
+                            className="button button-primary"
+                            onClick={() => void handleMarkDelivered(order.id)}
+                            disabled={isUpdating || isDelivered || updatingOrderIds.length > 0}
+                          >
+                            {isDelivered ? copy.sellerOrderDetail.delivered : copy.sellerOrders.deliverAction}
+                          </button>
+                          <Link className="inline-link" to={`/seller/orders/${order.id}`}>
+                            {copy.sellerOrders.detailLink}
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+            <div className="orders-mobile-list" aria-label="Orders list">
+              <label className="orders-mobile-select-all">
+                <input
+                  type="checkbox"
+                  checked={isAllSelectableChecked}
+                  onChange={handleToggleSelectAll}
+                  disabled={selectableOrders.length === 0 || updatingOrderIds.length > 0}
+                  aria-label="Select all orders"
+                />
+                <span>Select all visible orders</span>
+              </label>
               {visibleOrders.map((order) => {
                 const status = getOrderStatus(order.id, order.status)
                 const listing = listings.find((item) => item.id === order.listingId)
@@ -280,8 +347,8 @@ function SellerOrdersPage() {
                 const isUpdating = updatingOrderIds.includes(order.id)
 
                 return (
-                  <tr key={order.id}>
-                    <td>
+                  <article key={order.id} className="orders-mobile-card">
+                    <label className="orders-mobile-select">
                       <input
                         type="checkbox"
                         checked={selectedOrderIds.includes(order.id)}
@@ -289,45 +356,62 @@ function SellerOrdersPage() {
                         disabled={updatingOrderIds.length > 0}
                         aria-label={`Select order ${order.id}`}
                       />
-                    </td>
-                    <td>{order.id}</td>
-                    <td>{listing ? translateCatalogText(listing.title) : order.listingId}</td>
-                    <td>{order.buyer}</td>
-                    <td>{formatCurrency(order.total)}</td>
-                    <td>
-                      <span className={isDelivered ? 'order-status order-status-complete' : 'order-status'}>
-                        {translateOrderStatus(status)}
-                      </span>
-                    </td>
-                    <td>{formatDateTimeGmt3(order.createdAt, language)}</td>
-                    <td>
-                      <div className="table-row-actions">
-                        <button
-                          type="button"
-                          className="button button-secondary"
-                          onClick={() => void handleMarkPending(order.id)}
-                          disabled={isUpdating || status === 'pending' || updatingOrderIds.length > 0}
-                        >
-                          {status === 'pending' ? 'Pending' : 'Set Pending'}
-                        </button>
-                        <button
-                          type="button"
-                          className="button button-primary"
-                          onClick={() => void handleMarkDelivered(order.id)}
-                          disabled={isUpdating || isDelivered || updatingOrderIds.length > 0}
-                        >
-                          {isDelivered ? copy.sellerOrderDetail.delivered : copy.sellerOrders.deliverAction}
-                        </button>
-                        <Link className="inline-link" to={`/seller/orders/${order.id}`}>
-                          {copy.sellerOrders.detailLink}
-                        </Link>
+                      <span>Select order</span>
+                    </label>
+                    <div className="orders-mobile-card-grid">
+                      <div>
+                        <p className="orders-mobile-label">{copy.common.orderId}</p>
+                        <p className="orders-mobile-value">{order.id}</p>
                       </div>
-                    </td>
-                  </tr>
+                      <div>
+                        <p className="orders-mobile-label">{copy.common.status}</p>
+                        <span className={isDelivered ? 'order-status order-status-complete' : 'order-status'}>
+                          {translateOrderStatus(status)}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="orders-mobile-label">{copy.common.product}</p>
+                        <p className="orders-mobile-value">{listing ? translateCatalogText(listing.title) : order.listingId}</p>
+                      </div>
+                      <div>
+                        <p className="orders-mobile-label">{copy.common.buyer}</p>
+                        <p className="orders-mobile-value">{order.buyer}</p>
+                      </div>
+                      <div>
+                        <p className="orders-mobile-label">{copy.common.totalLabel}</p>
+                        <p className="orders-mobile-value">{formatCurrency(order.total)}</p>
+                      </div>
+                      <div>
+                        <p className="orders-mobile-label">Ordered At (GMT+3)</p>
+                        <p className="orders-mobile-value">{formatDateTimeGmt3(order.createdAt, language)}</p>
+                      </div>
+                    </div>
+                    <div className="orders-mobile-actions">
+                      <button
+                        type="button"
+                        className="button button-secondary"
+                        onClick={() => void handleMarkPending(order.id)}
+                        disabled={isUpdating || status === 'pending' || updatingOrderIds.length > 0}
+                      >
+                        {status === 'pending' ? 'Pending' : 'Set Pending'}
+                      </button>
+                      <button
+                        type="button"
+                        className="button button-primary"
+                        onClick={() => void handleMarkDelivered(order.id)}
+                        disabled={isUpdating || isDelivered || updatingOrderIds.length > 0}
+                      >
+                        {isDelivered ? copy.sellerOrderDetail.delivered : copy.sellerOrders.deliverAction}
+                      </button>
+                      <Link className="button button-ghost orders-mobile-detail-link" to={`/seller/orders/${order.id}`}>
+                        {copy.sellerOrders.detailLink}
+                      </Link>
+                    </div>
+                  </article>
                 )
               })}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
     </section>

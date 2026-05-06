@@ -393,40 +393,79 @@ function SellerPage() {
               <p>No products yet.</p>
             </article>
           ) : (
-            <table className="orders-table">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Items in stock</th>
-                  <th>Stock level</th>
-                  <th>Live</th>
-                </tr>
-              </thead>
-              <tbody>
+            <>
+              <table className="orders-table seller-stock-table-desktop">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Items in stock</th>
+                    <th>Stock level</th>
+                    <th>Live</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {managedListings.map((listing) => {
+                    const status = listingStatuses[listing.id] ?? listing.status
+                    const stockPercent = Math.max(0, Math.min(100, Math.round((listing.inventory / maxInventory) * 100)))
+
+                    return (
+                      <tr key={`stock-${listing.id}`}>
+                        <td>{translateCatalogText(listing.title)}</td>
+                        <td>{listing.inventory}</td>
+                        <td>
+                          <div className="stock-mini-track" aria-hidden="true">
+                            <span className="stock-mini-fill" style={{ width: `${stockPercent}%` }} />
+                          </div>
+                        </td>
+                        <td>
+                          <span className={status === 'live' ? 'stock-live-pill' : 'stock-live-pill stock-live-pill-off'}>
+                            <span className="stock-live-dot" />
+                            {status === 'live' ? 'Live' : translateListingStatus(status)}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+              <div className="seller-stock-mobile-list" aria-label="Stock list">
                 {managedListings.map((listing) => {
                   const status = listingStatuses[listing.id] ?? listing.status
                   const stockPercent = Math.max(0, Math.min(100, Math.round((listing.inventory / maxInventory) * 100)))
 
                   return (
-                    <tr key={`stock-${listing.id}`}>
-                      <td>{translateCatalogText(listing.title)}</td>
-                      <td>{listing.inventory}</td>
-                      <td>
-                        <div className="stock-mini-track" aria-hidden="true">
-                          <span className="stock-mini-fill" style={{ width: `${stockPercent}%` }} />
+                    <article key={`stock-mobile-${listing.id}`} className="seller-stock-mobile-card">
+                      <div className="seller-stock-mobile-grid">
+                        <div>
+                          <p className="orders-mobile-label">Product</p>
+                          <p className="orders-mobile-value">{translateCatalogText(listing.title)}</p>
                         </div>
-                      </td>
-                      <td>
-                        <span className={status === 'live' ? 'stock-live-pill' : 'stock-live-pill stock-live-pill-off'}>
-                          <span className="stock-live-dot" />
-                          {status === 'live' ? 'Live' : translateListingStatus(status)}
-                        </span>
-                      </td>
-                    </tr>
+                        <div>
+                          <p className="orders-mobile-label">Items in stock</p>
+                          <p className="orders-mobile-value">{listing.inventory}</p>
+                        </div>
+                        <div>
+                          <p className="orders-mobile-label">Stock level</p>
+                          <div className="seller-stock-mobile-level">
+                            <div className="stock-mini-track" aria-hidden="true">
+                              <span className="stock-mini-fill" style={{ width: `${stockPercent}%` }} />
+                            </div>
+                            <span className="orders-mobile-value">{stockPercent}%</span>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="orders-mobile-label">Live</p>
+                          <span className={status === 'live' ? 'stock-live-pill' : 'stock-live-pill stock-live-pill-off'}>
+                            <span className="stock-live-dot" />
+                            {status === 'live' ? 'Live' : translateListingStatus(status)}
+                          </span>
+                        </div>
+                      </div>
+                    </article>
                   )
                 })}
-              </tbody>
-            </table>
+              </div>
+            </>
           )}
         </div>
       </section>
