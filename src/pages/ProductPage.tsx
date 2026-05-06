@@ -4,6 +4,7 @@ import ListingCard from '../components/ListingCard'
 import PageHero from '../components/PageHero'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
+import { getListingImages } from '../lib/listingImages'
 import type { Listing } from '../types'
 
 type LocalizedText = {
@@ -329,6 +330,7 @@ function ProductPage() {
   const labels = productDetailLabels[language]
   const details = buildProductDetails(listing)
   const sellerInsights = buildSellerInsights(listing)
+  const listingImages = getListingImages(listing)
   const [selectedGalleryIndex, setSelectedGalleryIndex] = useState(0)
   const [selectedVariations, setSelectedVariations] = useState<Record<string, string>>({})
   const [reviewRating, setReviewRating] = useState(5)
@@ -350,6 +352,7 @@ function ProductPage() {
   }, [language, listing.id])
 
   const activeGallery = details.gallery[selectedGalleryIndex] ?? details.gallery[0]
+  const activeProductImage = listingImages[selectedGalleryIndex] ?? listingImages[0] ?? ''
   const listingOrders = orders.filter((order) => order.listingId === listing.id)
   const buyerOrders = listingOrders.filter(
     (order) => order.buyerId === session?.id || order.buyer === session?.name,
@@ -438,10 +441,10 @@ function ProductPage() {
             <h2>{translateCatalogText(listing.trust)}</h2>
           </div>
           <div className={`gallery-stage gallery-stage-${activeGallery.tone}`}>
-            {listing.imageUrl ? (
+            {activeProductImage ? (
               <img
                 className="product-gallery-image"
-                src={listing.imageUrl}
+                src={activeProductImage}
                 alt={translateCatalogText(listing.title)}
               />
             ) : null}
@@ -450,17 +453,22 @@ function ProductPage() {
             <p>{pickText(activeGallery.note, language)}</p>
           </div>
           <div className="gallery-thumb-grid">
-            {details.gallery.map((item, index) => (
+            {(listingImages.length > 0 ? listingImages : details.gallery.map(() => '')).map((imageUrl, index) => {
+              const item = details.gallery[index] ?? details.gallery[index % details.gallery.length]
+
+              return (
               <button
-                key={pickText(item.label, language)}
+                key={`${pickText(item.label, language)}-${imageUrl || index}`}
                 type="button"
                 className={index === selectedGalleryIndex ? 'gallery-thumb gallery-thumb-active' : 'gallery-thumb'}
                 onClick={() => setSelectedGalleryIndex(index)}
               >
+                {imageUrl ? <img className="gallery-thumb-image" src={imageUrl} alt={translateCatalogText(listing.title)} /> : null}
                 <strong>{pickText(item.label, language)}</strong>
                 <span>{pickText(item.note, language)}</span>
               </button>
-            ))}
+              )
+            })}
           </div>
           <div className="product-details-grid product-topline-grid">
             <div>

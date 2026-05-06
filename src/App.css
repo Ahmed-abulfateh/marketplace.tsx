@@ -973,6 +973,39 @@ html[dir='rtl'] .auth-header {
   color: #21c46b;
 }
 
+.shipment-media-block {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: center;
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border-soft);
+}
+
+.shipment-media-image {
+  width: 88px;
+  height: 88px;
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  object-fit: cover;
+  background: rgba(22, 24, 28, 0.96);
+}
+
+.shipment-media-link {
+  display: inline-block;
+  margin-top: 0.3rem;
+  color: var(--accent-strong);
+  text-decoration: none;
+  font-size: 0.85rem;
+  line-height: 1.3;
+  word-break: break-all;
+}
+
+.shipment-media-link:hover {
+  text-decoration: underline;
+}
+
 .listing-meta-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -1348,6 +1381,14 @@ html[dir='rtl'] .auth-header {
   cursor: pointer;
 }
 
+.gallery-thumb-image {
+  width: 100%;
+  height: 5.75rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-soft);
+  object-fit: cover;
+}
+
 .gallery-thumb-active,
 .variation-chip-active {
   border-color: rgba(29, 155, 240, 0.4);
@@ -1508,6 +1549,10 @@ html[dir='rtl'] .auth-header {
     linear-gradient(180deg, rgba(18, 20, 24, 0.96), rgba(10, 12, 16, 0.96));
 }
 
+.listing-image-stage {
+  position: relative;
+}
+
 .listing-card-body {
   padding: 1.25rem;
 }
@@ -1521,6 +1566,27 @@ html[dir='rtl'] .auth-header {
 
 .listing-image-media {
   border-bottom: 1px solid var(--border-soft);
+}
+
+.listing-image-dots {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0.6rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.listing-image-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
+}
+
+.listing-image-dot-active {
+  background: #ffffff;
 }
 
 .listing-image-placeholder {
@@ -1537,6 +1603,11 @@ html[dir='rtl'] .auth-header {
   border: 1px solid var(--border-soft);
   border-radius: 16px;
   background: rgba(22, 24, 28, 0.96);
+}
+
+.listing-image-url-grid {
+  display: grid;
+  gap: 0.55rem;
 }
 
 .listing-image-preview-img {
@@ -1681,7 +1752,8 @@ html[dir='rtl'] .auth-header {
   .seller-info-grid,
   .review-grid,
   .admin-stock-grid,
-  .order-item-meta-grid {
+  .order-item-meta-grid,
+  .shipment-media-block {
     grid-template-columns: 1fr;
   }
 

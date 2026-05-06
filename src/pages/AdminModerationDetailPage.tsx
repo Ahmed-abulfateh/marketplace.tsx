@@ -3,11 +3,13 @@ import { Navigate, useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
+import { getListingImages } from '../lib/listingImages'
 import type { ListingEditorInput, ListingStatus } from '../types'
 
 const createFormFromListing = (listing: {
   title: string
   imageUrl: string
+  imageUrls?: string[]
   price: number
   meta: string
   description: string
@@ -15,17 +17,22 @@ const createFormFromListing = (listing: {
   trust: string
   shipping: string
   inventory: number
-}) => ({
-  title: listing.title,
-  imageUrl: listing.imageUrl,
-  price: listing.price,
-  meta: listing.meta,
-  description: listing.description,
-  category: listing.category,
-  trust: listing.trust,
-  shipping: listing.shipping,
-  inventory: listing.inventory,
-})
+}) => {
+  const listingImages = getListingImages(listing)
+
+  return {
+    title: listing.title,
+    imageUrl: listingImages[0] ?? listing.imageUrl,
+    imageUrls: Array.from({ length: 6 }, (_, index) => listingImages[index] ?? ''),
+    price: listing.price,
+    meta: listing.meta,
+    description: listing.description,
+    category: listing.category,
+    trust: listing.trust,
+    shipping: listing.shipping,
+    inventory: listing.inventory,
+  }
+}
 
 function AdminModerationDetailPage() {
   const { listingId } = useParams()
@@ -89,7 +96,13 @@ function AdminModerationDetailPage() {
     }
 
     try {
-      await updateListing(listing.id, form)
+      const imageUrls = form.imageUrls.map((value) => value.trim()).filter(Boolean).slice(0, 6)
+
+      await updateListing(listing.id, {
+        ...form,
+        imageUrl: imageUrls[0] ?? '',
+        imageUrls,
+      })
       setActionNotice({ tone: 'success', message: copy.moderation.notices.updated })
     } catch (error) {
       setActionNotice({
@@ -186,7 +199,28 @@ function AdminModerationDetailPage() {
         </div>
         <form className="form-grid compact-form-grid" onSubmit={handleUpdateListing}>
           <input value={form?.title ?? ''} onChange={(event) => setForm((current) => current ? { ...current, title: event.target.value } : current)} placeholder={copy.moderation.placeholders.title} required />
-          <input value={form?.imageUrl ?? ''} onChange={(event) => setForm((current) => current ? { ...current, imageUrl: event.target.value } : current)} placeholder={copy.moderation.placeholders.imageUrl} type="url" />
+          {form?.imageUrls.map((imageUrl, index) => (
+            <input
+              key={`moderation-image-url-${index}`}
+              value={imageUrl}
+              onChange={(event) => setForm((current) => {
+                if (!current) {
+                  return current
+                }
+
+                const imageUrls = [...current.imageUrls]
+                imageUrls[index] = event.target.value
+
+                return {
+                  ...current,
+                  imageUrls,
+                  imageUrl: imageUrls.find((value) => value.trim()) ?? '',
+                }
+              })}
+              placeholder={`${copy.moderation.placeholders.imageUrl} ${index + 1}`}
+              type="url"
+            />
+          ))}
           <input value={form?.category ?? ''} onChange={(event) => setForm((current) => current ? { ...current, category: event.target.value } : current)} placeholder={copy.moderation.placeholders.category} required />
           <input value={String(form?.price ?? '')} onChange={(event) => setForm((current) => current ? { ...current, price: Number(event.target.value) } : current)} placeholder={copy.moderation.placeholders.price} type="number" min="1" required />
           <input value={String(form?.inventory ?? '')} onChange={(event) => setForm((current) => current ? { ...current, inventory: Number(event.target.value) } : current)} placeholder={copy.moderation.placeholders.inventory} type="number" min="1" required />

@@ -55,6 +55,7 @@ export type Listing = {
   id: string
   title: string
   imageUrl: string
+  imageUrls?: string[]
   seller: string
   price: number
   meta: string
@@ -72,6 +73,7 @@ export type Listing = {
 export type ListingEditorInput = {
   title: string
   imageUrl: string
+  imageUrls: string[]
   price: number
   meta: string
   description: string

@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
+import { getListingImages } from '../lib/listingImages'
 import type { Listing } from '../types'
 
 type ListingCardProps = {
@@ -15,11 +17,41 @@ function ListingCard({ listing }: ListingCardProps) {
   const isFavorite = favoriteIds.includes(listing.id)
   const isInCart = cartIds.includes(listing.id)
   const currentStatus = listingStatuses[listing.id] ?? listing.status
+  const listingImages = getListingImages(listing)
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+
+  useEffect(() => {
+    setActiveImageIndex(0)
+  }, [listing.id])
+
+  useEffect(() => {
+    if (listingImages.length <= 1) {
+      return
+    }
+
+    const timer = window.setInterval(() => {
+      setActiveImageIndex((current) => (current + 1) % listingImages.length)
+    }, 2200)
+
+    return () => window.clearInterval(timer)
+  }, [listingImages])
 
   return (
     <article className="listing-card">
-      {listing.imageUrl ? (
-        <img className="listing-image-media" src={listing.imageUrl} alt={translateCatalogText(listing.title)} loading="lazy" />
+      {listingImages.length > 0 ? (
+        <div className="listing-image-stage">
+          <img className="listing-image-media" src={listingImages[activeImageIndex]} alt={translateCatalogText(listing.title)} loading="lazy" />
+          {listingImages.length > 1 ? (
+            <div className="listing-image-dots" aria-hidden="true">
+              {listingImages.map((imageUrl, index) => (
+                <span
+                  key={`${listing.id}-${imageUrl}`}
+                  className={index === activeImageIndex ? 'listing-image-dot listing-image-dot-active' : 'listing-image-dot'}
+                />
+              ))}
+            </div>
+          ) : null}
+        </div>
       ) : (
         <div className="listing-image-placeholder" aria-hidden="true" />
       )}

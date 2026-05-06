@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import PageHero from '../components/PageHero'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
+import { getListingImages } from '../lib/listingImages'
 import type { Listing, ListingEditorInput, ListingStatus } from '../types'
 
 const sellerCategoryOptions = [
@@ -74,6 +75,7 @@ const sellerQueueCopy = {
 const createInitialForm = (defaults: { category: string; trust: string; shipping: string }): ListingEditorInput => ({
   title: '',
   imageUrl: '',
+  imageUrls: ['', '', '', '', '', ''],
   category: defaults.category,
   price: 85,
   inventory: 10,
@@ -83,17 +85,22 @@ const createInitialForm = (defaults: { category: string; trust: string; shipping
   shipping: defaults.shipping,
 })
 
-const createFormFromListing = (listing: Listing): ListingEditorInput => ({
-  title: listing.title,
-  imageUrl: listing.imageUrl,
-  category: listing.category,
-  price: listing.price,
-  inventory: listing.inventory,
-  meta: listing.meta,
-  description: listing.description,
-  trust: listing.trust,
-  shipping: listing.shipping,
-})
+const createFormFromListing = (listing: Listing): ListingEditorInput => {
+  const listingImages = getListingImages(listing)
+
+  return {
+    title: listing.title,
+    imageUrl: listingImages[0] ?? listing.imageUrl,
+    imageUrls: Array.from({ length: 6 }, (_, index) => listingImages[index] ?? ''),
+    category: listing.category,
+    price: listing.price,
+    inventory: listing.inventory,
+    meta: listing.meta,
+    description: listing.description,
+    trust: listing.trust,
+    shipping: listing.shipping,
+  }
+}
 
 function SellerPage() {
   const { copy, formatCurrency, language, translateCatalogText, translateListingStatus } = useLanguage()
@@ -249,14 +256,25 @@ function SellerPage() {
     setFormNotice(null)
 
     try {
+      const normalizedForm = {
+        ...form,
+        imageUrls: form.imageUrls.map((value) => value.trim()).filter(Boolean).slice(0, 6),
+      }
+
       if (editingListingId) {
-        await updateListing(editingListingId, form)
+        await updateListing(editingListingId, {
+          ...normalizedForm,
+          imageUrl: normalizedForm.imageUrls[0] ?? '',
+        })
         stopEditing()
         setFormNotice({ tone: 'success', message: copy.seller.notices.updated })
         return
       }
 
-      await createListing(form)
+      await createListing({
+        ...normalizedForm,
+        imageUrl: normalizedForm.imageUrls[0] ?? '',
+      })
       setForm(createInitialForm(copy.seller.defaultForm))
       setFormNotice({ tone: 'success', message: copy.seller.notices.created })
     } catch (error) {
@@ -546,15 +564,29 @@ function SellerPage() {
           <input value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} placeholder={copy.seller.placeholders.title} required />
           <label className="form-field">
             <span className="card-label">{copy.seller.placeholders.imageUrlLabel} <span className="form-field-optional">(optional)</span></span>
-            <input
-              value={form.imageUrl}
-              onChange={(event) => setForm((current) => ({ ...current, imageUrl: event.target.value }))}
-              placeholder={copy.seller.placeholders.imageUrl}
-              type="url"
-            />
-            {form.imageUrl.trim() ? (
+            <div className="listing-image-url-grid">
+              {form.imageUrls.map((imageUrl, index) => (
+                <input
+                  key={`image-url-${index}`}
+                  value={imageUrl}
+                  onChange={(event) => setForm((current) => {
+                    const imageUrls = [...current.imageUrls]
+                    imageUrls[index] = event.target.value
+
+                    return {
+                      ...current,
+                      imageUrls,
+                      imageUrl: imageUrls.find((value) => value.trim()) ?? '',
+                    }
+                  })}
+                  placeholder={`${copy.seller.placeholders.imageUrl} ${index + 1}`}
+                  type="url"
+                />
+              ))}
+            </div>
+            {(form.imageUrls.find((value) => value.trim()) ?? '').trim() ? (
               <img
-                src={form.imageUrl.trim()}
+                src={(form.imageUrls.find((value) => value.trim()) ?? '').trim()}
                 alt={form.title || 'preview'}
                 className="listing-image-preview-img"
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}

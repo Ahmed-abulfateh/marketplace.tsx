@@ -281,6 +281,7 @@ const slugify = (value) =>
 const editableListingFields = [
   'title',
   'imageUrl',
+  'imageUrls',
   'price',
   'meta',
   'description',
@@ -303,6 +304,14 @@ const pickListingUpdates = (payload = {}) =>
           return [field, String(payload[field] ?? '').trim()]
         }
 
+        if (field === 'imageUrls') {
+          const imageUrls = Array.isArray(payload[field])
+            ? payload[field].map((value) => String(value ?? '').trim()).filter(Boolean).slice(0, 6)
+            : []
+
+          return [field, imageUrls]
+        }
+
         return [field, payload[field]]
       }),
   )
@@ -319,6 +328,21 @@ const isValidListingImageUrl = (value) => {
     return false
   }
 }
+
+const normalizeListingImageUrls = (payload = {}) => {
+  const imageUrls = Array.isArray(payload.imageUrls)
+    ? payload.imageUrls.map((value) => String(value ?? '').trim()).filter(Boolean).slice(0, 6)
+    : []
+  const fallbackImageUrl = String(payload.imageUrl ?? '').trim()
+
+  if (fallbackImageUrl && !imageUrls.includes(fallbackImageUrl)) {
+    imageUrls.unshift(fallbackImageUrl)
+  }
+
+  return imageUrls.slice(0, 6)
+}
+
+const hasOnlyValidListingImages = (imageUrls) => imageUrls.every((value) => isValidListingImageUrl(value))
 
 const findManagedListing = async (req, res) => {
   const listing = await Listing.findOne({ id: req.params.listingId }).lean()
@@ -560,9 +584,10 @@ app.post('/api/cart/:listingId/toggle', authRequired(['buyer', 'seller', 'admin'
 
 app.post('/api/listings', authRequired(['seller', 'admin']), sellerApproved, async (req, res) => {
   const payload = req.body ?? {}
-  const imageUrl = String(payload.imageUrl ?? '').trim()
+  const imageUrls = normalizeListingImageUrls(payload)
+  const imageUrl = imageUrls[0] ?? ''
 
-  if (!isValidListingImageUrl(imageUrl)) {
+  if (!hasOnlyValidListingImages(imageUrls)) {
     return res.status(400).json({ message: 'Image URL must be a valid http(s) URL.' })
   }
 
@@ -570,6 +595,7 @@ app.post('/api/listings', authRequired(['seller', 'admin']), sellerApproved, asy
     id: slugify(payload.title || `listing-${Date.now()}`),
     title: payload.title,
     imageUrl,
+    imageUrls,
     seller: req.session.name,
     price: Number(payload.price),
     meta: payload.meta,
@@ -593,11 +619,20 @@ app.patch('/api/listings/:listingId', authRequired(['seller', 'admin']), sellerA
     return
   }
 
-  if (req.body?.imageUrl !== undefined && !isValidListingImageUrl(req.body.imageUrl)) {
+  const imageUrls = normalizeListingImageUrls(req.body)
+
+  if ((req.body?.imageUrl !== undefined || req.body?.imageUrls !== undefined) && !hasOnlyValidListingImages(imageUrls)) {
     return res.status(400).json({ message: 'Image URL must be a valid http(s) URL.' })
   }
 
-  await Listing.updateOne({ id: listing.id }, { $set: pickListingUpdates(req.body) })
+  const updates = pickListingUpdates({
+    ...req.body,
+    ...(req.body?.imageUrl !== undefined || req.body?.imageUrls !== undefined
+      ? { imageUrl: imageUrls[0] ?? '', imageUrls }
+      : {}),
+  })
+
+  await Listing.updateOne({ id: listing.id }, { $set: updates })
   res.json({ store: await buildStore(req.session) })
 })
 

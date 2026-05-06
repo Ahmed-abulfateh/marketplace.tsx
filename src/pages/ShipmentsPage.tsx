@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
+import { getListingImages } from '../lib/listingImages'
 
 type ShipmentsLocationState = {
   confirmation?: {
@@ -51,6 +52,8 @@ function ShipmentsPage() {
           </article>
         ) : buyerOrders.map((order) => {
           const listing = listings.find((item) => item.id === order.listingId)
+          const shipmentImages = listing ? getListingImages(listing) : []
+          const showShipmentMedia = shipmentImages.length > 0 && (order.status === 'shipped' || order.status === 'delivered')
 
           return (
             <article className="queue-card" key={order.id}>
@@ -78,6 +81,26 @@ function ShipmentsPage() {
                   </p>
                 </div>
               </div>
+              {showShipmentMedia ? (
+                <div className="shipment-media-block">
+                  <img
+                    className="shipment-media-image"
+                    src={shipmentImages[0]}
+                    alt={listing ? translateCatalogText(listing.title) : order.listingId}
+                  />
+                  <div>
+                    <span className="product-label">Image URL</span>
+                    <a
+                      className="shipment-media-link"
+                      href={shipmentImages[0]}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {shipmentImages[0]}
+                    </a>
+                  </div>
+                </div>
+              ) : null}
               {order.status === 'shipped' || order.status === 'delivered' ? (
                 <Link className="inline-link" to={`/browse/${order.listingId}`}>
                   {copy.shipments.reviewCta}
