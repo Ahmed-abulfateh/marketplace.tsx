@@ -260,7 +260,7 @@ function SellerOrdersPage() {
                       type="checkbox"
                       checked={isAllSelectableChecked}
                       onChange={handleToggleSelectAll}
-                      disabled={selectableOrders.length === 0 || updatingOrderIds.length > 0}
+                      disabled={selectableOrders.length === 0}
                       aria-label="Select all orders"
                     />
                   </th>
@@ -287,7 +287,7 @@ function SellerOrdersPage() {
                           type="checkbox"
                           checked={selectedOrderIds.includes(order.id)}
                           onChange={() => handleToggleOrderSelection(order.id)}
-                          disabled={updatingOrderIds.length > 0}
+                          disabled={isUpdating}
                           aria-label={`Select order ${order.id}`}
                         />
                       </td>
@@ -335,7 +335,7 @@ function SellerOrdersPage() {
                   type="checkbox"
                   checked={isAllSelectableChecked}
                   onChange={handleToggleSelectAll}
-                  disabled={selectableOrders.length === 0 || updatingOrderIds.length > 0}
+                  disabled={selectableOrders.length === 0}
                   aria-label="Select all orders"
                 />
                 <span>Select all visible orders</span>
@@ -353,7 +353,7 @@ function SellerOrdersPage() {
                         type="checkbox"
                         checked={selectedOrderIds.includes(order.id)}
                         onChange={() => handleToggleOrderSelection(order.id)}
-                        disabled={updatingOrderIds.length > 0}
+                        disabled={isUpdating}
                         aria-label={`Select order ${order.id}`}
                       />
                       <span>Select order</span>
