@@ -13,3 +13,5 @@ services:
         generateValue: true
       - key: FRONTEND_URL
         value: https://ahmed-abulfateh.github.io
+      - key: FRONTEND_BASENAME
+        value: /marketplace.tsx

@@ -75,13 +75,34 @@ const mailTransport =
     ? nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: Number(process.env.SMTP_PORT ?? 587),
-        secure: false,
+        secure: Number(process.env.SMTP_PORT ?? 587) === 465,
         auth: {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,
         },
       })
     : null
+
+const mailFromAddress = process.env.SMTP_FROM || process.env.WORKSPACE_EMAIL || process.env.SMTP_USER || 'no-reply@signal-market.local'
+
+const frontendBasePath = (() => {
+  const configuredBasePath = String(process.env.FRONTEND_BASENAME ?? '/marketplace.tsx').trim()
+
+  if (!configuredBasePath || configuredBasePath === '/') {
+    return ''
+  }
+
+  return configuredBasePath.startsWith('/')
+    ? configuredBasePath.replace(/\/$/, '')
+    : `/${configuredBasePath.replace(/\/$/, '')}`
+})()
+
+const buildFrontendUrl = (pathname) => {
+  const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '')
+  const normalizedPath = pathname.startsWith('/') ? pathname : `/${pathname}`
+
+  return `${frontendUrl}${frontendBasePath}${normalizedPath}`
+}
 
 app.use(
   '/api',
@@ -459,12 +480,26 @@ app.post('/api/auth/sign-up', async (req, res) => {
   res.status(201).json({ token: issueToken(session), store: await buildStore(session) })
 })
 
-app.post('/api/auth/request-password-reset', authRequired(['buyer', 'seller', 'admin']), async (req, res) => {
+app.post('/api/auth/request-password-reset', async (req, res) => {
+  const tokenSession = parseSession(req)
+  const requestedEmail = String(req.body?.email ?? '').trim().toLowerCase()
+  const lookup = tokenSession?.id ? { id: tokenSession.id } : requestedEmail ? { email: requestedEmail } : null
+
+  if (!lookup) {
+    return res.status(400).json({ message: 'Email is required to send a password reset link.' })
+  }
+
+  const existingUser = await User.findOne(lookup).lean()
+
+  if (!existingUser) {
+    return res.json({ message: 'If an account exists for that email, a password reset link has been sent.' })
+  }
+
   const token = crypto.randomBytes(32).toString('hex')
   const expiry = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
 
   const user = await User.findOneAndUpdate(
-    { id: req.session.id },
+    { id: existingUser.id },
     { $set: { passwordResetToken: token, passwordResetExpiry: expiry } },
     { new: true },
   ).lean()
@@ -473,19 +508,25 @@ app.post('/api/auth/request-password-reset', authRequired(['buyer', 'seller', 'a
     return res.status(404).json({ message: 'User not found.' })
   }
 
-  const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '')
-  const resetUrl = `${frontendUrl}/marketplace.tsx/reset-password?token=${token}`
+  const resetUrl = buildFrontendUrl(`/reset-password?token=${encodeURIComponent(token)}`)
 
   if (mailTransport) {
-    await mailTransport.sendMail({
-      from: process.env.SMTP_USER,
-      to: user.email,
-      subject: 'Reset your Signal Market password',
-      html: `<p>Click the link below to reset your Signal Market password. It expires in 1 hour.</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>If you did not request this, you can ignore this email.</p>`,
-    })
-    res.json({ message: 'Password reset email sent.' })
+    try {
+      await mailTransport.sendMail({
+        from: mailFromAddress,
+        to: user.email,
+        subject: 'Reset your Signal Market password',
+        text: `Use the link below to reset your Signal Market password. It expires in 1 hour.\n\n${resetUrl}\n\nIf you did not request this, you can ignore this email.`,
+        html: `<p>Use the link below to reset your Signal Market password. It expires in 1 hour.</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>If you did not request this, you can ignore this email.</p>`,
+      })
+    } catch (error) {
+      console.error('Password reset email failed:', error)
+      return res.status(500).json({ message: 'Could not send the password reset email. Check SMTP settings and try again.' })
+    }
+
+    return res.json({ message: 'If an account exists for that email, a password reset link has been sent.' })
   } else {
-    res.json({ message: 'Password reset link generated.', resetUrl })
+    return res.json({ message: 'Password reset link generated.', resetUrl })
   }
 })
 
@@ -716,7 +757,7 @@ app.patch('/api/orders/:orderId/advance', authRequired(['seller', 'admin']), asy
   if (mailTransport && order.email && nextStatus !== order.status) {
     try {
       await mailTransport.sendMail({
-        from: process.env.WORKSPACE_EMAIL || process.env.SMTP_USER,
+        from: mailFromAddress,
         to: order.email,
         subject: `Signal Market order ${order.id} status updated`,
         text: `Your order ${order.id} is now ${nextStatus}.`,

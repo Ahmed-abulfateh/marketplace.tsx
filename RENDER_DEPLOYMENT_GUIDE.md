@@ -28,7 +28,18 @@ In the Render dashboard, add these environment variables to your service:
 MONGODB_URI=<your MongoDB Atlas URI>
 JWT_SECRET=your_jwt_secret_key_here
 FRONTEND_URL=https://ahmed-abulfateh.github.io
+FRONTEND_BASENAME=/marketplace.tsx
 PORT=10000
+```
+
+For password reset emails, also set:
+
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+SMTP_FROM=your-email@gmail.com
 ```
 
 ### Step 3.5: ⚠️ **CRITICAL - Whitelist Render IPs in MongoDB Atlas**

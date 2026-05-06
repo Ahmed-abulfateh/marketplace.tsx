@@ -88,6 +88,11 @@ type AppCopy = {
       password: string
       submit: string
       createAccount: string
+      resetEmail: string
+      resetLinkSubmit: string
+      resetLinkSummary: string
+      resetLinkSent: string
+      resetLinkError: string
       error: string
       seedAccounts: Array<{ role: string; email: string; phone: string }>
   }
@@ -498,6 +503,11 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       password: 'Password',
       submit: 'Sign in',
       createAccount: 'Create account',
+      resetEmail: 'Email for password reset',
+      resetLinkSubmit: 'Send reset link',
+      resetLinkSummary: 'Enter your account email and we will send a password reset link.',
+      resetLinkSent: 'If an account exists for that email, a password reset link has been sent.',
+      resetLinkError: 'Could not send the password reset link.',
       error: 'Could not sign in.',
       seedAccounts: [
         { role: 'Admin', email: 'ahmed-bh91@live.com', phone: '66929266' },
@@ -932,6 +942,11 @@ export const copyByLanguage: Record<Language, AppCopy> = {
       password: 'كلمة المرور',
       submit: 'تسجيل الدخول',
       createAccount: 'إنشاء حساب',
+      resetEmail: 'البريد الإلكتروني لإعادة التعيين',
+      resetLinkSubmit: 'إرسال رابط إعادة التعيين',
+      resetLinkSummary: 'أدخل البريد الإلكتروني للحساب وسنرسل رابط إعادة تعيين كلمة المرور.',
+      resetLinkSent: 'إذا كان هناك حساب لهذا البريد الإلكتروني، فقد تم إرسال رابط إعادة تعيين كلمة المرور.',
+      resetLinkError: 'تعذر إرسال رابط إعادة تعيين كلمة المرور.',
       error: 'تعذر تسجيل الدخول.',
       seedAccounts: [
         { role: 'إدارة', email: 'ahmed-bh91@live.com', phone: '66929266' },
