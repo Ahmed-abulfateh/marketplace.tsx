@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import ListingCard from '../components/ListingCard'
 import PageHero from '../components/PageHero'
 import { useLanguage } from '../context/LanguageContext'
@@ -294,7 +294,29 @@ function ProductPage() {
   const listing = listings.find((item) => item.id === listingId)
 
   if (!listing) {
-    return <Navigate to="/browse" replace />
+    return (
+      <main className="page-stack">
+        <section className="market-grid">
+          <div className="section-heading compact">
+            <p className="section-kicker">Product details</p>
+            <h2>Product unavailable</h2>
+          </div>
+          <article className="queue-card">
+            <p>
+              This product can no longer be opened for review. It may have been removed or is no longer available.
+            </p>
+            <div className="card-actions">
+              <Link className="button button-secondary" to="/shipments">
+                Back to shipments
+              </Link>
+              <Link className="button button-primary" to="/browse">
+                Browse products
+              </Link>
+            </div>
+          </article>
+        </section>
+      </main>
+    )
   }
 
   const relatedListings = listings.filter(
@@ -325,7 +347,7 @@ function ProductPage() {
         ]),
       ),
     )
-  }, [details.variations, language, listing.id])
+  }, [language, listing.id])
 
   const activeGallery = details.gallery[selectedGalleryIndex] ?? details.gallery[0]
   const listingOrders = orders.filter((order) => order.listingId === listing.id)

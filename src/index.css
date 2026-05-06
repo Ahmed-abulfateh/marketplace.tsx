@@ -25,7 +25,7 @@
     radial-gradient(circle at top, rgba(29, 155, 240, 0.14), transparent 22%),
     radial-gradient(circle at bottom right, rgba(29, 155, 240, 0.08), transparent 20%),
     linear-gradient(180deg, var(--background), var(--background-2));
-  font: 16px/1.55 var(--body-font);
+  font: 16px/1.42 var(--body-font);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -56,7 +56,7 @@ body {
 html[dir='rtl'] body {
   font-family: var(--body-font-ar);
   font-weight: 400;
-  line-height: 1.68;
+  line-height: 1.52;
 }
 
 #root {
@@ -105,6 +105,7 @@ html[dir='rtl'] h2 {
 
 h3 {
   font-size: 1.2rem;
+  line-height: 1.18;
 }
 
 html[dir='rtl'] h3 {

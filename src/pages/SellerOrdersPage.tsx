@@ -15,7 +15,10 @@ function SellerOrdersPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const location = useLocation()
   const locationState = location.state as SellerOrdersLocationState | null
-  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null)
+  const [updatingOrderIds, setUpdatingOrderIds] = useState<string[]>([])
+  const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([])
+  const [optimisticDeliveredOrderIds, setOptimisticDeliveredOrderIds] = useState<string[]>([])
+  const [updateError, setUpdateError] = useState<string | null>(null)
 
   const managedListingIds = new Set(
     listings.filter((listing) => listing.seller === session?.name).map((listing) => listing.id),
@@ -36,29 +39,164 @@ function SellerOrdersPage() {
     { id: 'delivered', label: copy.sellerOrders.filters.delivered },
   ]
 
+  const getOrderStatus = (orderId: string, currentStatus: string) => (
+    optimisticDeliveredOrderIds.includes(orderId) ? 'delivered' : currentStatus
+  )
+
   const visibleOrders = sellerOrders.filter((order) => {
+    const status = getOrderStatus(order.id, order.status)
+
     if (activeView === 'all') {
       return true
     }
 
     if (activeView === 'to-ship') {
-      return order.status === 'paid'
+      return status === 'paid'
     }
 
-    return order.status === activeView
+    return status === activeView
   })
 
+  const selectableOrders = visibleOrders
+  const selectedDeliverableOrderIds = selectedOrderIds.filter((id) =>
+    selectableOrders.some((order) => order.id === id && getOrderStatus(order.id, order.status) !== 'delivered'),
+  )
+  const selectedPendingOrderIds = selectedOrderIds.filter((id) =>
+    selectableOrders.some((order) => order.id === id && getOrderStatus(order.id, order.status) !== 'pending'),
+  )
+  const isAllSelectableChecked =
+    selectableOrders.length > 0 && selectableOrders.every((order) => selectedOrderIds.includes(order.id))
+
   const handleMarkDelivered = async (orderId: string) => {
-    if (updatingOrderId) {
+    if (updatingOrderIds.length > 0) {
       return
     }
 
-    setUpdatingOrderId(orderId)
+    setUpdateError(null)
+    setOptimisticDeliveredOrderIds((current) => (current.includes(orderId) ? current : [...current, orderId]))
+    setUpdatingOrderIds([orderId])
 
     try {
       await advanceOrderStatus(orderId, 'delivered')
+      setSelectedOrderIds((current) => current.filter((id) => id !== orderId))
+    } catch (error) {
+      setOptimisticDeliveredOrderIds((current) => current.filter((id) => id !== orderId))
+      setUpdateError(error instanceof Error ? error.message : 'Could not update order status.')
     } finally {
-      setUpdatingOrderId(null)
+      setUpdatingOrderIds([])
+    }
+  }
+
+  const handleMarkPending = async (orderId: string) => {
+    if (updatingOrderIds.length > 0) {
+      return
+    }
+
+    setUpdateError(null)
+    setUpdatingOrderIds([orderId])
+
+    try {
+      await advanceOrderStatus(orderId, 'pending')
+      setOptimisticDeliveredOrderIds((current) => current.filter((id) => id !== orderId))
+      setSelectedOrderIds((current) => current.filter((id) => id !== orderId))
+    } catch (error) {
+      setUpdateError(error instanceof Error ? error.message : 'Could not update order status.')
+    } finally {
+      setUpdatingOrderIds([])
+    }
+  }
+
+  const handleToggleOrderSelection = (orderId: string) => {
+    setSelectedOrderIds((current) => (
+      current.includes(orderId)
+        ? current.filter((id) => id !== orderId)
+        : [...current, orderId]
+    ))
+  }
+
+  const handleToggleSelectAll = () => {
+    if (isAllSelectableChecked) {
+      setSelectedOrderIds((current) => (
+        current.filter((id) => !selectableOrders.some((order) => order.id === id))
+      ))
+      return
+    }
+
+    setSelectedOrderIds((current) => {
+      const withAll = [...current]
+
+      selectableOrders.forEach((order) => {
+        if (!withAll.includes(order.id)) {
+          withAll.push(order.id)
+        }
+      })
+
+      return withAll
+    })
+  }
+
+  const handleBulkMarkDelivered = async () => {
+    if (updatingOrderIds.length > 0 || selectedDeliverableOrderIds.length === 0) {
+      return
+    }
+
+    const approved = window.confirm(`Approve delivery for ${selectedDeliverableOrderIds.length} selected orders?`)
+
+    if (!approved) {
+      return
+    }
+
+    setUpdateError(null)
+    setOptimisticDeliveredOrderIds((current) => {
+      const next = [...current]
+
+      selectedDeliverableOrderIds.forEach((id) => {
+        if (!next.includes(id)) {
+          next.push(id)
+        }
+      })
+
+      return next
+    })
+    setUpdatingOrderIds(selectedDeliverableOrderIds)
+
+    try {
+      await Promise.all(selectedDeliverableOrderIds.map((orderId) => advanceOrderStatus(orderId, 'delivered')))
+      setSelectedOrderIds((current) => current.filter((id) => !selectedDeliverableOrderIds.includes(id)))
+    } catch (error) {
+      setOptimisticDeliveredOrderIds((current) => (
+        current.filter((id) => !selectedDeliverableOrderIds.includes(id))
+      ))
+      setUpdateError(error instanceof Error ? error.message : 'Could not update selected orders.')
+    } finally {
+      setUpdatingOrderIds([])
+    }
+  }
+
+  const handleBulkMarkPending = async () => {
+    if (updatingOrderIds.length > 0 || selectedPendingOrderIds.length === 0) {
+      return
+    }
+
+    const approved = window.confirm(`Set ${selectedPendingOrderIds.length} selected orders to pending?`)
+
+    if (!approved) {
+      return
+    }
+
+    setUpdateError(null)
+    setUpdatingOrderIds(selectedPendingOrderIds)
+
+    try {
+      await Promise.all(selectedPendingOrderIds.map((orderId) => advanceOrderStatus(orderId, 'pending')))
+      setOptimisticDeliveredOrderIds((current) => (
+        current.filter((id) => !selectedPendingOrderIds.includes(id))
+      ))
+      setSelectedOrderIds((current) => current.filter((id) => !selectedPendingOrderIds.includes(id)))
+    } catch (error) {
+      setUpdateError(error instanceof Error ? error.message : 'Could not update selected orders.')
+    } finally {
+      setUpdatingOrderIds([])
     }
   }
 
@@ -69,6 +207,7 @@ function SellerOrdersPage() {
         <h2>{copy.sellerOrders.title}</h2>
       </div>
       {locationState?.notice ? <p className="form-notice form-notice-success">{locationState.notice}</p> : null}
+      {updateError ? <p className="form-notice form-notice-error">{updateError}</p> : null}
       <section className="filter-strip">
         {viewButtons.map((button) => (
           <button
@@ -81,56 +220,111 @@ function SellerOrdersPage() {
           </button>
         ))}
       </section>
-      <div className="queue-grid admin-order-grid">
+      <div className="table-toolbar">
+        <p className="table-count-text">
+          Rows: {visibleOrders.length} | Selected: {selectedDeliverableOrderIds.length}
+        </p>
+        <div className="table-toolbar-actions">
+          <button
+            type="button"
+            className="button button-secondary"
+            onClick={() => void handleBulkMarkPending()}
+            disabled={selectedPendingOrderIds.length === 0 || updatingOrderIds.length > 0}
+          >
+            Set Pending For Checked
+          </button>
+          <button
+            type="button"
+            className="button button-primary"
+            onClick={() => void handleBulkMarkDelivered()}
+            disabled={selectedDeliverableOrderIds.length === 0 || updatingOrderIds.length > 0}
+          >
+            Approve Delivered For Checked
+          </button>
+        </div>
+      </div>
+      <div className="table-shell">
         {visibleOrders.length === 0 ? (
           <article className="queue-card">
             <p>{copy.sellerOrders.noOrders}</p>
           </article>
-        ) : visibleOrders.map((order) => {
-          const listing = listings.find((item) => item.id === order.listingId)
+        ) : (
+          <table className="orders-table">
+            <thead>
+              <tr>
+                <th>
+                  <input
+                    type="checkbox"
+                    checked={isAllSelectableChecked}
+                    onChange={handleToggleSelectAll}
+                    disabled={selectableOrders.length === 0 || updatingOrderIds.length > 0}
+                    aria-label="Select all orders"
+                  />
+                </th>
+                <th>{copy.common.orderId}</th>
+                <th>{copy.common.product}</th>
+                <th>{copy.common.buyer}</th>
+                <th>{copy.common.totalLabel}</th>
+                <th>{copy.common.status}</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visibleOrders.map((order) => {
+                const status = getOrderStatus(order.id, order.status)
+                const listing = listings.find((item) => item.id === order.listingId)
+                const isDelivered = status === 'delivered'
+                const isUpdating = updatingOrderIds.includes(order.id)
 
-          return (
-            <article className="queue-card" key={order.id}>
-              <div className="order-item-meta-grid">
-                <div>
-                  <span className="product-label">{copy.common.orderId}</span>
-                  <strong>{order.id}</strong>
-                </div>
-                <div>
-                  <span className="product-label">{copy.common.product}</span>
-                  <p>{listing ? translateCatalogText(listing.title) : order.listingId}</p>
-                </div>
-                <div>
-                  <span className="product-label">{copy.common.buyer}</span>
-                  <p>{order.buyer}</p>
-                </div>
-                <div>
-                  <span className="product-label">{copy.common.totalLabel}</span>
-                  <strong>{formatCurrency(order.total)}</strong>
-                </div>
-                <div>
-                  <span className="product-label">{copy.common.status}</span>
-                  <p className={order.status === 'delivered' ? 'order-status order-status-complete' : 'order-status'}>
-                    {translateOrderStatus(order.status)}
-                  </p>
-                </div>
-              </div>
-              <div className="card-actions">
-                <button
-                  type="button"
-                  className="button button-primary"
-                  onClick={() => void handleMarkDelivered(order.id)}
-                  disabled={updatingOrderId === order.id || order.status === 'delivered'}
-                >
-                  {order.status === 'delivered' ? copy.sellerOrderDetail.delivered : copy.sellerOrders.deliverAction}
-                </button>
-                <Link className="inline-link" to={`/seller/orders/${order.id}`}>
-                  {copy.sellerOrders.detailLink}
-                </Link>
-              </div>
-            </article>
-          )
-        })}
+                return (
+                  <tr key={order.id}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selectedOrderIds.includes(order.id)}
+                        onChange={() => handleToggleOrderSelection(order.id)}
+                        disabled={updatingOrderIds.length > 0}
+                        aria-label={`Select order ${order.id}`}
+                      />
+                    </td>
+                    <td>{order.id}</td>
+                    <td>{listing ? translateCatalogText(listing.title) : order.listingId}</td>
+                    <td>{order.buyer}</td>
+                    <td>{formatCurrency(order.total)}</td>
+                    <td>
+                      <span className={isDelivered ? 'order-status order-status-complete' : 'order-status'}>
+                        {translateOrderStatus(status)}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="table-row-actions">
+                        <button
+                          type="button"
+                          className="button button-secondary"
+                          onClick={() => void handleMarkPending(order.id)}
+                          disabled={isUpdating || status === 'pending' || updatingOrderIds.length > 0}
+                        >
+                          {status === 'pending' ? 'Pending' : 'Set Pending'}
+                        </button>
+                        <button
+                          type="button"
+                          className="button button-primary"
+                          onClick={() => void handleMarkDelivered(order.id)}
+                          disabled={isUpdating || isDelivered || updatingOrderIds.length > 0}
+                        >
+                          {isDelivered ? copy.sellerOrderDetail.delivered : copy.sellerOrders.deliverAction}
+                        </button>
+                        <Link className="inline-link" to={`/seller/orders/${order.id}`}>
+                          {copy.sellerOrders.detailLink}
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
     </section>
   )

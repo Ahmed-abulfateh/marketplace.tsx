@@ -9,6 +9,8 @@ function SellerOrderDetailPage() {
   const { copy, formatCurrency, language, translateCatalogText, translateOrderStatus } = useLanguage()
   const { advanceOrderStatus, isReady, listings, orders, sendOrderMessage, session } = useMarketplace()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [optimisticDelivered, setOptimisticDelivered] = useState(false)
+  const [statusError, setStatusError] = useState<string | null>(null)
   const [messageText, setMessageText] = useState('')
   const [chatError, setChatError] = useState<string | null>(null)
 
@@ -25,6 +27,7 @@ function SellerOrderDetailPage() {
   const listing = listings.find((item) => item.id === order.listingId)
 
   const isManagedBySeller = session?.role !== 'seller' || listing?.seller === session?.name
+  const isDelivered = optimisticDelivered || order.status === 'delivered'
 
   if (!isManagedBySeller) {
     return <Navigate to="/seller/orders" replace />
@@ -36,6 +39,8 @@ function SellerOrderDetailPage() {
     }
 
     const wasPending = order.status === 'pending'
+    setStatusError(null)
+    setOptimisticDelivered(true)
     setIsSubmitting(true)
 
     try {
@@ -47,6 +52,9 @@ function SellerOrderDetailPage() {
           state: { notice: copy.sellerOrders.confirmedNotice },
         })
       }
+    } catch (error) {
+      setOptimisticDelivered(false)
+      setStatusError(error instanceof Error ? error.message : 'Could not update order status.')
     } finally {
       setIsSubmitting(false)
     }
@@ -89,8 +97,8 @@ function SellerOrderDetailPage() {
           </div>
           <div>
             <span className="product-label">{copy.sellerOrderDetail.status}</span>
-            <strong className={order.status === 'delivered' ? 'order-status order-status-complete' : 'order-status'}>
-              {translateOrderStatus(order.status)}
+            <strong className={isDelivered ? 'order-status order-status-complete' : 'order-status'}>
+              {translateOrderStatus(isDelivered ? 'delivered' : order.status)}
             </strong>
           </div>
         </div>
@@ -128,14 +136,15 @@ function SellerOrderDetailPage() {
             type="button"
             className="button button-primary"
             onClick={() => void handleAdvanceOrder()}
-            disabled={order.status === 'delivered' || isSubmitting}
+            disabled={isDelivered || isSubmitting}
           >
-            {order.status === 'delivered' ? copy.sellerOrderDetail.delivered : 'Mark Delivered / Complete'}
+            {isDelivered ? copy.sellerOrderDetail.delivered : 'Mark Delivered / Complete'}
           </button>
           <Link className="inline-link" to="/seller/orders">
             {copy.sellerOrderDetail.back}
           </Link>
         </div>
+        {statusError ? <p className="form-notice form-notice-error">{statusError}</p> : null}
         <form className="form-grid compact-form-grid" onSubmit={handleSendMessage}>
           <textarea
             value={messageText}

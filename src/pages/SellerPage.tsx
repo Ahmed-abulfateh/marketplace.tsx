@@ -130,6 +130,12 @@ function SellerPage() {
   ).length
   const payoutHoldCount = sellerOrders.filter((order) => order.status === 'shipped').length
   const queueCopy = sellerQueueCopy[language]
+  const totalProductCount = managedListings.length
+  const totalStockUnits = managedListings.reduce((sum, listing) => sum + listing.inventory, 0)
+  const liveProductCount = managedListings.filter(
+    (listing) => (listingStatuses[listing.id] ?? listing.status) === 'live',
+  ).length
+  const maxInventory = Math.max(...managedListings.map((listing) => listing.inventory), 1)
   const sellerQueueCards = [
     {
       id: 'shipments',
@@ -351,6 +357,60 @@ function SellerPage() {
             <p>{metric.note}</p>
           </article>
         ))}
+      </section>
+
+      <section className="market-grid">
+        <div className="section-heading compact">
+          <p className="section-kicker">Stock stats</p>
+          <h2>Live product and stock table</h2>
+        </div>
+        <div className="table-toolbar">
+          <p className="table-count-text">
+            Products: {totalProductCount} | Stock units: {totalStockUnits} | Live: {liveProductCount}
+          </p>
+        </div>
+        <div className="table-shell">
+          {managedListings.length === 0 ? (
+            <article className="queue-card">
+              <p>No products yet.</p>
+            </article>
+          ) : (
+            <table className="orders-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Items in stock</th>
+                  <th>Stock level</th>
+                  <th>Live</th>
+                </tr>
+              </thead>
+              <tbody>
+                {managedListings.map((listing) => {
+                  const status = listingStatuses[listing.id] ?? listing.status
+                  const stockPercent = Math.max(0, Math.min(100, Math.round((listing.inventory / maxInventory) * 100)))
+
+                  return (
+                    <tr key={`stock-${listing.id}`}>
+                      <td>{translateCatalogText(listing.title)}</td>
+                      <td>{listing.inventory}</td>
+                      <td>
+                        <div className="stock-mini-track" aria-hidden="true">
+                          <span className="stock-mini-fill" style={{ width: `${stockPercent}%` }} />
+                        </div>
+                      </td>
+                      <td>
+                        <span className={status === 'live' ? 'stock-live-pill' : 'stock-live-pill stock-live-pill-off'}>
+                          <span className="stock-live-dot" />
+                          {status === 'live' ? 'Live' : translateListingStatus(status)}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
       </section>
 
       <section className="split-panel">

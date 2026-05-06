@@ -835,59 +835,134 @@ app.post('/api/checkout', authRequired(['buyer', 'seller', 'admin']), async (req
     phone,
     road,
   } = req.body ?? {}
-  const listings = await Listing.find({ id: { $in: listingIds ?? [] } }).lean()
-  const count = await Order.countDocuments()
-  const shippingAddress = [addressLine, city, road, block, country].filter(Boolean).join(', ')
-  const createdOrders = await Order.insertMany(
-    listings.map((listing, index) => ({
-      id: `ord-${1044 + count + index}`,
-      listingId: listing.id,
-      buyerId: req.session.id,
-      buyer: buyerName,
-      total: listing.price,
-      status: 'pending',
-      email,
-      phone,
-      addressLine,
-      city,
-      road,
-      block,
-      country,
-      shippingAddress,
-      paymentMethod,
-      messages: [],
-    })),
-  )
+  const requestedListingIds = Array.isArray(listingIds) ? listingIds : []
 
-  await AppState.updateOne({ ownerId: req.session.id }, { $set: { cartIds: [] } })
-
-  let emailSent = false
-
-  if (mailTransport && email) {
-    try {
-      await mailTransport.sendMail({
-        from: process.env.WORKSPACE_EMAIL || process.env.SMTP_USER,
-        to: email,
-        subject: 'Signal Market order confirmation',
-        text: `Your order has been created for ${createdOrders.length} item(s).`,
-      })
-      emailSent = true
-    } catch (error) {
-      console.error('Email send failed:', error)
-    }
+  if (requestedListingIds.length === 0) {
+    return res.status(400).json({ message: 'At least one listing is required for checkout.' })
   }
 
-  res.status(201).json({
-    store: await buildStore(req.session),
-    confirmation: {
-      buyerName,
-      email,
-      address: shippingAddress,
-      paymentMethod,
-      emailSent,
-      orderIds: createdOrders.map((order) => order.id),
-    },
-  })
+  const listingQuantityMap = requestedListingIds.reduce((map, id) => {
+    const key = String(id)
+    map.set(key, (map.get(key) ?? 0) + 1)
+    return map
+  }, new Map())
+
+  const listings = await Listing.find({ id: { $in: Array.from(listingQuantityMap.keys()) } }).lean()
+
+  if (listings.length !== listingQuantityMap.size) {
+    return res.status(404).json({ message: 'One or more selected listings were not found.' })
+  }
+
+  const outOfStockListing = listings.find((listing) => listing.inventory < (listingQuantityMap.get(listing.id) ?? 0))
+
+  if (outOfStockListing) {
+    return res.status(409).json({ message: `Insufficient stock for ${outOfStockListing.title}.` })
+  }
+
+  const decrementedListings = []
+
+  try {
+    for (const listing of listings) {
+      const requestedQuantity = listingQuantityMap.get(listing.id) ?? 0
+
+      if (requestedQuantity <= 0) {
+        continue
+      }
+
+      const updatedListing = await Listing.findOneAndUpdate(
+        { id: listing.id, inventory: { $gte: requestedQuantity } },
+        { $inc: { inventory: -requestedQuantity } },
+        { new: true },
+      ).lean()
+
+      if (!updatedListing) {
+        throw new Error(`Insufficient stock for ${listing.title}.`)
+      }
+
+      decrementedListings.push({ id: listing.id, quantity: requestedQuantity })
+    }
+  } catch (error) {
+    await Promise.all(
+      decrementedListings.map(({ id, quantity }) =>
+        Listing.updateOne({ id }, { $inc: { inventory: quantity } }),
+      ),
+    )
+
+    return res.status(409).json({
+      message: error instanceof Error ? error.message : 'Unable to confirm order due to stock availability.',
+    })
+  }
+
+  try {
+    const count = await Order.countDocuments()
+    const shippingAddress = [addressLine, city, road, block, country].filter(Boolean).join(', ')
+    const createdOrders = await Order.insertMany(
+      requestedListingIds.map((listingId, index) => {
+        const listing = listings.find((item) => item.id === String(listingId))
+
+        if (!listing) {
+          throw new Error('Could not build orders for checkout.')
+        }
+
+        return {
+          id: `ord-${1044 + count + index}`,
+          listingId: listing.id,
+          buyerId: req.session.id,
+          buyer: buyerName,
+          total: listing.price,
+          status: 'pending',
+          email,
+          phone,
+          addressLine,
+          city,
+          road,
+          block,
+          country,
+          shippingAddress,
+          paymentMethod,
+          messages: [],
+        }
+      }),
+    )
+
+    await AppState.updateOne({ ownerId: req.session.id }, { $set: { cartIds: [] } })
+
+    let emailSent = false
+
+    if (mailTransport && email) {
+      try {
+        await mailTransport.sendMail({
+          from: process.env.WORKSPACE_EMAIL || process.env.SMTP_USER,
+          to: email,
+          subject: 'Signal Market order confirmation',
+          text: `Your order has been created for ${createdOrders.length} item(s).`,
+        })
+        emailSent = true
+      } catch (error) {
+        console.error('Email send failed:', error)
+      }
+    }
+
+    res.status(201).json({
+      store: await buildStore(req.session),
+      confirmation: {
+        buyerName,
+        email,
+        address: shippingAddress,
+        paymentMethod,
+        emailSent,
+        orderIds: createdOrders.map((order) => order.id),
+      },
+    })
+  } catch (error) {
+    await Promise.all(
+      decrementedListings.map(({ id, quantity }) =>
+        Listing.updateOne({ id }, { $inc: { inventory: quantity } }),
+      ),
+    )
+
+    res.status(500).json({ message: error instanceof Error ? error.message : 'Checkout failed.' })
+  }
 })
 
 if (hasBuiltFrontend) {
