@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useMarketplace } from '../context/MarketplaceContext'
+import type { OrderStatus } from '../types'
 
 type QueueView = 'all' | 'to-ship' | 'shipped' | 'delivered'
 
@@ -39,7 +40,7 @@ function SellerOrdersPage() {
     { id: 'delivered', label: copy.sellerOrders.filters.delivered },
   ]
 
-  const getOrderStatus = (orderId: string, currentStatus: string) => (
+  const getOrderStatus = (orderId: string, currentStatus: OrderStatus): OrderStatus => (
     optimisticDeliveredOrderIds.includes(orderId) ? 'delivered' : currentStatus
   )
 
