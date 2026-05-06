@@ -287,7 +287,6 @@ function SellerOrdersPage() {
                           type="checkbox"
                           checked={selectedOrderIds.includes(order.id)}
                           onChange={() => handleToggleOrderSelection(order.id)}
-                          disabled={isUpdating}
                           aria-label={`Select order ${order.id}`}
                         />
                       </td>
@@ -353,7 +352,6 @@ function SellerOrdersPage() {
                         type="checkbox"
                         checked={selectedOrderIds.includes(order.id)}
                         onChange={() => handleToggleOrderSelection(order.id)}
-                        disabled={isUpdating}
                         aria-label={`Select order ${order.id}`}
                       />
                       <span>Select order</span>
